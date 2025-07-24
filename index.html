@@ -204,11 +204,11 @@
             <div class="space-y-3">
                 <div class="checkbox-item">
                     <input type="checkbox" id="doc1">
-                    <label for="doc1" class="text-gray-700">RG e CPF originais e cópias de ambos os noivos(as)</label>
+                    <label for="doc1" class="text-gray-700">Identidade e CPF originais de ambos os noivos(as)</label>
                 </div>
                 <div class="checkbox-item">
                     <input type="checkbox" id="doc2">
-                    <label for="doc2" class="text-gray-700">Certidão de nascimento ou casamento com averbação de divórcio</label>
+                    <label for="doc2" class="text-gray-700">Certidão de nascimento ou casamento com averbação de divórcio/óbito</label>
                 </div>
                 <div class="checkbox-item">
                     <input type="checkbox" id="doc3">
@@ -284,10 +284,7 @@
                             <label for="noivo1CPF">CPF:</label>
                             <input type="text" id="noivo1CPF" name="noivo1CPF" required>
                         </div>
-                        <div class="form-group">
-                            <label for="noivo1RG">RG:</label>
-                            <input type="text" id="noivo1RG" name="noivo1RG" required>
-                        </div>
+                        <!-- RG field removed -->
                         <div class="form-group">
                             <label for="noivo1DataNascimento">Data de nascimento:</label>
                             <input type="date" id="noivo1DataNascimento" name="noivo1DataNascimento" required>
@@ -338,10 +335,7 @@
                             <label for="noivo2CPF">CPF:</label>
                             <input type="text" id="noivo2CPF" name="noivo2CPF" required>
                         </div>
-                        <div class="form-group">
-                            <label for="noivo2RG">RG:</label>
-                            <input type="text" id="noivo2RG" name="noivo2RG" required>
-                        </div>
+                        <!-- RG field removed -->
                         <div class="form-group">
                             <label for="noivo2DataNascimento">Data de nascimento:</label>
                             <input type="date" id="noivo2DataNascimento" name="noivo2DataNascimento" required>
@@ -550,8 +544,8 @@
 
                 // Basic validation before generating PDF
                 let requiredFields = [
-                    'noivo1Nome', 'noivo1CPF', 'noivo1RG', 'noivo1DataNascimento', 'noivo1Nacionalidade', 'noivo1Naturalidade', 'noivo1EstadoCivil', 'noivo1Profissao', 'noivo1NomeMae', 'noivo1Endereco',
-                    'noivo2Nome', 'noivo2CPF', 'noivo2RG', 'noivo2DataNascimento', 'noivo2Nacionalidade', 'noivo2Naturalidade', 'noivo2EstadoCivil', 'noivo2Profissao', 'noivo2NomeMae', 'noivo2Endereco',
+                    'noivo1Nome', 'noivo1CPF', /* 'noivo1RG', */ 'noivo1DataNascimento', 'noivo1Nacionalidade', 'noivo1Naturalidade', 'noivo1EstadoCivil', 'noivo1Profissao', 'noivo1NomeMae', 'noivo1Endereco',
+                    'noivo2Nome', 'noivo2CPF', /* 'noivo2RG', */ 'noivo2DataNascimento', 'noivo2Nacionalidade', 'noivo2Naturalidade', 'noivo2EstadoCivil', 'noivo2Profissao', 'noivo2NomeMae', 'noivo2Endereco',
                     'regimeBens', 'alteracaoNome', 'dataCasamento', 'horarioCasamento',
                     'testemunha1Nome', 'testemunha1CPF', 'testemunha2Nome', 'testemunha2CPF'
                 ];
@@ -641,7 +635,7 @@
                 addSectionTitle('DADOS DO(A) NOIVO(A) 1');
                 addText(`Nome completo: ${data.noivo1Nome}`, 20);
                 addText(`CPF: ${data.noivo1CPF}`, 20);
-                addText(`RG: ${data.noivo1RG}`, 20);
+                // RG field removed from PDF output
                 addText(`Data de nascimento: ${formatDate(data.noivo1DataNascimento)}`, 20);
                 addText(`Nacionalidade: ${data.noivo1Nacionalidade}`, 20);
                 addText(`Naturalidade: ${data.noivo1Naturalidade}`, 20);
@@ -656,7 +650,7 @@
                 addSectionTitle('DADOS DO(A) NOIVO(A) 2');
                 addText(`Nome completo: ${data.noivo2Nome}`, 20);
                 addText(`CPF: ${data.noivo2CPF}`, 20);
-                addText(`RG: ${data.noivo2RG}`, 20);
+                // RG field removed from PDF output
                 addText(`Data de nascimento: ${formatDate(data.noivo2DataNascimento)}`, 20);
                 addText(`Nacionalidade: ${data.noivo2Nacionalidade}`, 20);
                 addText(`Naturalidade: ${data.noivo2Naturalidade}`, 20);
