@@ -168,6 +168,55 @@
         .grid-cols-2 {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
+        .loading-text {
+            text-align: center;
+            padding: 2rem;
+            font-style: italic;
+            color: #888;
+        }
+        .pre-registration-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+        .pre-registration-table th, .pre-registration-table td {
+            border: 1px solid #E0E0E0;
+            padding: 0.75rem;
+            text-align: left;
+        }
+        .pre-registration-table th {
+            background-color: #F0F0F0;
+            font-weight: 600;
+            color: #555;
+        }
+        .pre-registration-table tr:nth-child(even) {
+            background-color: #FBFBFB;
+        }
+        .pre-registration-table tr:hover {
+            background-color: #F0F0F0;
+        }
+        .action-buttons button {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            margin-right: 0.5rem;
+            transition: background-color 0.2s ease;
+        }
+        .action-buttons .view-btn {
+            background-color: #6B6B6B; /* Darker gray for view */
+            color: white;
+        }
+        .action-buttons .view-btn:hover {
+            background-color: #4A4A4A;
+        }
+        .action-buttons .delete-btn {
+            background-color: #DC2626; /* Red for delete */
+            color: white;
+        }
+        .action-buttons .delete-btn:hover {
+            background-color: #B91C1C;
+        }
+
         @media (max-width: 768px) {
             .container {
                 margin: 1rem;
@@ -185,6 +234,48 @@
             .sub-section-title {
                 font-size: 1.15rem;
             }
+            .pre-registration-table, .pre-registration-table thead, .pre-registration-table tbody, .pre-registration-table th, .pre-registration-table td, .pre-registration-table tr {
+                display: block;
+            }
+            .pre-registration-table thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            .pre-registration-table tr {
+                border: 1px solid #E0E0E0;
+                margin-bottom: 1rem;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+            .pre-registration-table td {
+                border: none;
+                border-bottom: 1px solid #E0E0E0;
+                position: relative;
+                padding-left: 50%;
+                text-align: right;
+            }
+            .pre-registration-table td:last-child {
+                border-bottom: 0;
+            }
+            .pre-registration-table td:before {
+                position: absolute;
+                top: 0;
+                left: 6px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: 600;
+                color: #555;
+            }
+            /* Data labels for mobile */
+            .pre-registration-table td:nth-of-type(1):before { content: "Protocolo:"; }
+            .pre-registration-table td:nth-of-type(2):before { content: "Noivo(a) 1:"; }
+            .pre-registration-table td:nth-of-type(3):before { content: "Noivo(a) 2:"; }
+            .pre-registration-table td:nth-of-type(4):before { content: "Data Casamento:"; }
+            .pre-registration-table td:nth-of-type(5):before { content: "Tipo:"; }
+            .pre-registration-table td:nth-of-type(6):before { content: "Ações:"; }
         }
     </style>
 </head>
@@ -208,7 +299,7 @@
                 </div>
                 <div class="checkbox-item">
                     <input type="checkbox" id="doc2">
-                    <label for="doc2" class="text-gray-700">Certidão de nascimento ou casamento com averbação de divórcio/óbito</label>
+                    <label for="doc2" class="text-gray-700">Certidão de nascimento ou casamento com averbação de divórcio</label>
                 </div>
                 <div class="checkbox-item">
                     <input type="checkbox" id="doc3">
@@ -284,7 +375,6 @@
                             <label for="noivo1CPF">CPF:</label>
                             <input type="text" id="noivo1CPF" name="noivo1CPF" required>
                         </div>
-                        <!-- RG field removed -->
                         <div class="form-group">
                             <label for="noivo1DataNascimento">Data de nascimento:</label>
                             <input type="date" id="noivo1DataNascimento" name="noivo1DataNascimento" required>
@@ -335,7 +425,6 @@
                             <label for="noivo2CPF">CPF:</label>
                             <input type="text" id="noivo2CPF" name="noivo2CPF" required>
                         </div>
-                        <!-- RG field removed -->
                         <div class="form-group">
                             <label for="noivo2DataNascimento">Data de nascimento:</label>
                             <input type="date" id="noivo2DataNascimento" name="noivo2DataNascimento" required>
@@ -447,112 +536,479 @@
                 </div>
 
                 <div class="text-center mt-8">
-                    <button type="button" id="generatePdfBtn" class="btn-primary">
-                        <i data-lucide="file-text" class="w-5 h-5"></i>
-                        Gerar PDF
+                    <button type="submit" id="generatePdfBtn" class="btn-primary">
+                        <i data-lucide="save" class="w-5 h-5"></i>
+                        Salvar e Gerar PDF
                     </button>
                 </div>
             </form>
+        </section>
+
+        <!-- Gerenciamento de Pré-Cadastros -->
+        <section class="card-section">
+            <h2 class="section-title">
+                <i data-lucide="list-checks" class="w-7 h-7 text-[#A0522D]"></i>
+                3. Pré-Cadastros Salvos
+            </h2>
+            <div class="form-group mb-4">
+                <label for="searchPreRegistrations">Pesquisar por nome do(a) noivo(a) ou protocolo:</label>
+                <input type="text" id="searchPreRegistrations" placeholder="Digite para pesquisar...">
+            </div>
+            <div id="preRegistrationsList" class="overflow-x-auto">
+                <p class="loading-text" id="loadingPreRegistrations">Carregando pré-cadastros...</p>
+                <table class="pre-registration-table hidden" id="preRegistrationsTable"> <!-- Added ID here -->
+                    <thead>
+                        <tr>
+                            <th>Protocolo</th>
+                            <th>Noivo(a) 1</th>
+                            <th>Noivo(a) 2</th>
+                            <th>Data Casamento</th>
+                            <th>Tipo</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="preRegistrationsTableBody">
+                        <!-- Pre-registrations will be loaded here -->
+                    </tbody>
+                </table>
+                <p class="loading-text hidden" id="noPreRegistrations">Nenhum pré-cadastro encontrado.</p>
+            </div>
         </section>
     </div>
 
     <!-- jsPDF library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script>
-        // Ensure jsPDF is available globally
-        const { jsPDF } = window.jspdf;
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        document.addEventListener('DOMContentLoaded', () => {
+        // Function to format date from YYYY-MM-DD to DD/MM/YYYY - MOVED TO GLOBAL SCOPE
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const [year, month, day] = dateString.split('-');
+            return `${day}/${month}/${year}`;
+        }
+
+        // Ensure jsPDF is available globally - CORRECTED ACCESS
+        const jsPDF = window.jspdf.jsPDF; 
+
+        // Firebase configuration (provided by Canvas environment)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let userId = null; // To store the authenticated user ID
+        let allPreRegistrations = []; // To store all fetched pre-registrations for filtering
+        let isDomContentLoaded = false; // Flag to track DOM readiness
+
+        // Authenticate user
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                console.log("Authenticated with UID:", userId);
+                if (isDomContentLoaded) { // Only load if DOM is ready
+                    loadPreRegistrations();
+                }
+            } else {
+                // If no user, try to sign in with custom token or anonymously
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    try {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                        userId = auth.currentUser.uid;
+                        console.log("Signed in with custom token:", userId);
+                        if (isDomContentLoaded) { // Only load if DOM is ready
+                            loadPreRegistrations();
+                        }
+                    } catch (error) {
+                        console.error("Error signing in with custom token:", error);
+                        // Fallback to anonymous if custom token fails
+                        try {
+                            await signInAnonymously(auth);
+                            userId = auth.currentUser.uid;
+                            console.log("Signed in anonymously:", userId);
+                            if (isDomContentLoaded) { // Only load if DOM is ready
+                                loadPreRegistrations();
+                            }
+                        } catch (anonError) {
+                            console.error("Error signing in anonymously:", anonError);
+                            // Ensure the element exists before trying to update its text
+                            if (document.getElementById('loadingPreRegistrations')) {
+                                document.getElementById('loadingPreRegistrations').textContent = "Erro ao autenticar. Por favor, recarregue a página.";
+                            }
+                        }
+                    }
+                } else {
+                    try {
+                        await signInAnonymously(auth);
+                        userId = auth.currentUser.uid;
+                        console.log("Signed in anonymously (no custom token):", userId);
+                        if (isDomContentLoaded) { // Only load if DOM is ready
+                            loadPreRegistrations();
+                        }
+                    } catch (anonError) {
+                        console.error("Error signing in anonymously:", anonError);
+                        // Ensure the element exists before trying to update its text
+                        if (document.getElementById('loadingPreRegistrations')) {
+                            document.getElementById('loadingPreRegistrations').textContent = "Erro ao autenticar. Por favor, recarregue a página.";
+                        }
+                    }
+                }
+            }
+        });
+
+        // Function to generate a unique protocol number
+        function generateProtocolNumber() {
+            const timestamp = Date.now();
+            const random = Math.floor(Math.random() * 10000);
+            return `PROTO-${timestamp}-${random}`;
+        }
+
+        // Function to load pre-registrations from Firestore
+        function loadPreRegistrations() {
+            if (!userId) {
+                console.log("User not authenticated yet. Waiting to load pre-registrations.");
+                return;
+            }
+
+            const preRegistrationsColRef = collection(db, `artifacts/${appId}/users/${userId}/marriageRegistrations`);
+            const q = query(preRegistrationsColRef); // No orderBy to avoid index issues, sort client-side
+
+            onSnapshot(q, (snapshot) => {
+                allPreRegistrations = [];
+                snapshot.forEach((doc) => {
+                    allPreRegistrations.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Sort by dataCasamento (most recent first)
+                allPreRegistrations.sort((a, b) => {
+                    const dateA = new Date(a.dataCasamento);
+                    const dateB = new Date(b.dataCasamento);
+                    return dateB - dateA; // Descending order
+                });
+
+                displayPreRegistrations(allPreRegistrations);
+                // Ensure elements exist before manipulating classList
+                if (document.getElementById('loadingPreRegistrations')) {
+                    document.getElementById('loadingPreRegistrations').classList.add('hidden');
+                }
+                if (allPreRegistrations.length > 0) {
+                    if (document.getElementById('preRegistrationsTable')) {
+                        document.getElementById('preRegistrationsTable').classList.remove('hidden');
+                    }
+                    if (document.getElementById('noPreRegistrations')) {
+                        document.getElementById('noPreRegistrations').classList.add('hidden');
+                    }
+                } else {
+                    if (document.getElementById('preRegistrationsTable')) {
+                        document.getElementById('preRegistrationsTable').classList.add('hidden');
+                    }
+                    if (document.getElementById('noPreRegistrations')) {
+                        document.getElementById('noPreRegistrations').classList.remove('hidden');
+                    }
+                }
+            }, (error) => {
+                console.error("Error fetching pre-registrations:", error);
+                if (document.getElementById('loadingPreRegistrations')) {
+                    document.getElementById('loadingPreRegistrations').textContent = "Erro ao carregar pré-cadastros.";
+                    document.getElementById('loadingPreRegistrations').classList.remove('hidden');
+                }
+                if (document.getElementById('preRegistrationsTable')) {
+                    document.getElementById('preRegistrationsTable').classList.add('hidden');
+                }
+                if (document.getElementById('noPreRegistrations')) {
+                    document.getElementById('noPreRegistrations').classList.add('hidden');
+                }
+            });
+        }
+
+        // Function to display pre-registrations in the table
+        function displayPreRegistrations(registrations) {
+            const tableBody = document.getElementById('preRegistrationsTableBody');
+            if (!tableBody) { // Add a check for tableBody as well
+                console.error("Table body element not found.");
+                return;
+            }
+            tableBody.innerHTML = ''; // Clear existing rows
+
+            // Ensure elements exist before manipulating classList
+            const noPreRegistrationsElement = document.getElementById('noPreRegistrations');
+            const preRegistrationsTableElement = document.getElementById('preRegistrationsTable');
+
+            if (registrations.length === 0) {
+                if (noPreRegistrationsElement) noPreRegistrationsElement.classList.remove('hidden');
+                if (preRegistrationsTableElement) preRegistrationsTableElement.classList.add('hidden');
+                return;
+            } else {
+                if (noPreRegistrationsElement) noPreRegistrationsElement.classList.add('hidden');
+                if (preRegistrationsTableElement) preRegistrationsTableElement.classList.remove('hidden');
+            }
+
+            registrations.forEach(reg => {
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>${reg.protocolNumber || 'N/A'}</td>
+                    <td>${reg.noivo1Nome}</td>
+                    <td>${reg.noivo2Nome}</td>
+                    <td>${formatDate(reg.dataCasamento)}</td>
+                    <td>${reg.tipoCasamento}</td>
+                    <td class="action-buttons">
+                        <button class="view-btn" data-id="${reg.id}">Visualizar PDF</button>
+                        <button class="delete-btn" data-id="${reg.id}">Excluir</button>
+                    </td>
+                `;
+            });
+
+            // Add event listeners for view and delete buttons
+            tableBody.querySelectorAll('.view-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const id = event.target.dataset.id;
+                    const registrationData = allPreRegistrations.find(reg => reg.id === id);
+                    if (registrationData) {
+                        generatePdf(registrationData); // Regenerate PDF from stored data
+                    }
+                });
+            });
+
+            tableBody.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', async (event) => {
+                    const id = event.target.dataset.id;
+                    showMessageBox('Confirmação', 'Tem certeza que deseja excluir este pré-cadastro?', true, async () => {
+                        try {
+                            await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/marriageRegistrations`, id));
+                            showMessageBox('Sucesso', 'Pré-cadastro excluído com sucesso!');
+                        } catch (error) {
+                            console.error("Error deleting document:", error);
+                            showMessageBox('Erro', 'Ocorreu um erro ao excluir o pré-cadastro.');
+                        }
+                    });
+                });
+            });
+        }
+
+        // Event listener for search input
+        document.getElementById('searchPreRegistrations').addEventListener('input', (event) => {
+            const searchTerm = event.target.value.toLowerCase();
+            const filteredRegistrations = allPreRegistrations.filter(reg =>
+                (reg.noivo1Nome && reg.noivo1Nome.toLowerCase().includes(searchTerm)) ||
+                (reg.noivo2Nome && reg.noivo2Nome.toLowerCase().includes(searchTerm)) ||
+                (reg.protocolNumber && reg.protocolNumber.toLowerCase().includes(searchTerm))
+            );
+            displayPreRegistrations(filteredRegistrations);
+        });
+
+        // Modified showMessageBox to include a callback for confirmation
+        function showMessageBox(title, message, isConfirm = false, onConfirm = null) {
+            const messageBox = document.createElement('div');
+            messageBox.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50';
+            messageBox.innerHTML = `
+                <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
+                    <p class="text-lg font-semibold ${title.includes('Atenção') || title.includes('Erro') ? 'text-red-600' : 'text-[#A0522D]'} mb-4">${title}</p>
+                    <p class="text-gray-700 mb-6">${message}</p>
+                    <div class="flex justify-center gap-4">
+                        <button id="closeMessageBox" class="btn-primary">OK</button>
+                        ${isConfirm ? '<button id="confirmMessageBox" class="btn-primary bg-red-600 hover:bg-red-700">Confirmar</button>' : ''}
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(messageBox);
+
+            document.getElementById('closeMessageBox').addEventListener('click', () => {
+                document.body.removeChild(messageBox);
+            });
+
+            if (isConfirm && onConfirm) {
+                document.getElementById('confirmMessageBox').addEventListener('click', () => {
+                    document.body.removeChild(messageBox);
+                    onConfirm();
+                });
+            }
+        }
+
+
+        // Centralized PDF Generation Function
+        function generatePdf(dataToPrint) {
+            const doc = new jsPDF();
+            let y = 20;
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const bottomMargin = 30;
+
+            const addText = (text, x, fontSize = 10, fontStyle = 'normal') => {
+                doc.setFont("helvetica", fontStyle);
+                doc.setFontSize(fontSize);
+                doc.text(text, x, y);
+                y += fontSize / 2.5 + 5;
+            };
+
+            const addSectionTitle = (title) => {
+                y += 10;
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(14);
+                doc.text(title, 20, y);
+                y += 8;
+                doc.setDrawColor(200);
+                doc.line(20, y, 190, y);
+                y += 5;
+            };
+
+            const checkPageBreak = (requiredSpace = 40) => {
+                if (y + requiredSpace >= pageHeight - bottomMargin) {
+                    doc.addPage();
+                    y = 20;
+                }
+            };
+
+            // --- PDF Content Generation ---
+            addSectionTitle('FICHA DE PRÉ-CADASTRO DE CASAMENTO');
+            y = 40;
+
+            addText(`Número de Protocolo: ${dataToPrint.protocolNumber || 'N/A'}`, 20, 12, 'bold');
+            y += 10; // Extra space after protocol number
+
+            checkPageBreak(30);
+            addSectionTitle('TIPO DE CASAMENTO');
+            addText(`Tipo de Casamento: ${dataToPrint.tipoCasamento}`, 20);
+            if (dataToPrint.tipoCasamento === 'Religioso com Efeito Civil') {
+                addText(`Local de Celebração: ${dataToPrint.localCelebracao || 'Não informado'}`, 20);
+                addText(`Nome da Autoridade Religiosa: ${dataToPrint.autoridadeReligiosa || 'Não informado'}`, 20);
+            }
+
+            checkPageBreak(80);
+            addSectionTitle('DADOS DO(A) NOIVO(A) 1');
+            addText(`Nome completo: ${dataToPrint.noivo1Nome || 'Não informado'}`, 20);
+            addText(`CPF: ${dataToPrint.noivo1CPF || 'Não informado'}`, 20);
+            addText(`Data de nascimento: ${formatDate(dataToPrint.noivo1DataNascimento) || 'Não informado'}`, 20);
+            addText(`Nacionalidade: ${dataToPrint.noivo1Nacionalidade || 'Não informado'}`, 20);
+            addText(`Naturalidade: ${dataToPrint.noivo1Naturalidade || 'Não informado'}`, 20);
+            addText(`Estado civil: ${dataToPrint.noivo1EstadoCivil || 'Não informado'}`, 20);
+            addText(`Profissão: ${dataToPrint.noivo1Profissao || 'Não informado'}`, 20);
+            addText(`Nome da mãe: ${dataToPrint.noivo1NomeMae || 'Não informado'}`, 20);
+            addText(`Nome do pai: ${dataToPrint.noivo1NomePai || 'Não informado'}`, 20);
+            addText(`Endereço completo: ${dataToPrint.noivo1Endereco || 'Não informado'}`, 20);
+
+            checkPageBreak(80);
+            addSectionTitle('DADOS DO(A) NOIVO(A) 2');
+            addText(`Nome completo: ${dataToPrint.noivo2Nome || 'Não informado'}`, 20);
+            addText(`CPF: ${dataToPrint.noivo2CPF || 'Não informado'}`, 20);
+            addText(`Data de nascimento: ${formatDate(dataToPrint.noivo2DataNascimento) || 'Não informado'}`, 20);
+            addText(`Nacionalidade: ${dataToPrint.noivo2Nacionalidade || 'Não informado'}`, 20);
+            addText(`Naturalidade: ${dataToPrint.noivo2Naturalidade || 'Não informado'}`, 20);
+            addText(`Estado civil: ${dataToPrint.noivo2EstadoCivil || 'Não informado'}`, 20);
+            addText(`Profissão: ${dataToPrint.noivo2Profissao || 'Não informado'}`, 20);
+            addText(`Nome da mãe: ${dataToPrint.noivo2NomeMae || 'Não informado'}`, 20);
+            addText(`Nome do pai: ${dataToPrint.noivo2NomePai || 'Não informado'}`, 20);
+            addText(`Endereço completo: ${dataToPrint.noivo2Endereco || 'Não informado'}`, 20);
+
+            checkPageBreak(50);
+            addSectionTitle('REGIME DE BENS E ALTERAÇÃO DE NOME');
+            addText(`Regime de bens escolhido: ${dataToPrint.regimeBens || 'Não informado'}`, 20);
+            addText(`Haverá alteração de nome? ${dataToPrint.alteracaoNome || 'Não informado'}`, 20);
+            if (dataToPrint.alteracaoNome === 'Sim') {
+                addText(`Novo nome: ${dataToPrint.novoNome || 'Não informado'}`, 20);
+            }
+
+            checkPageBreak(40);
+            addSectionTitle('DATA E HORÁRIO PRETENDIDOS');
+            addText(`Data pretendida para o casamento: ${formatDate(dataToPrint.dataCasamento) || 'Não informado'}`, 20);
+            addText(`Horário pretendido: ${dataToPrint.horarioCasamento || 'Não informado'}`, 20);
+
+            checkPageBreak(60);
+            addSectionTitle('DADOS DAS TESTEMUNHAS');
+            addText(`Testemunha 1: ${dataToPrint.testemunha1Nome || 'Não informado'} (CPF: ${dataToPrint.testemunha1CPF || 'Não informado'})`, 20);
+            addText(`Testemunha 2: ${dataToPrint.testemunha2Nome || 'Não informado'} (CPF: ${dataToPrint.testemunha2CPF || 'Não informado'})`, 20);
+
+            checkPageBreak(100);
+            y += 20;
+            addText('_______________________________________', 20, 10, 'normal');
+            addText('NOIVO(A) 1', 20, 10, 'bold');
+            y += 10;
+            addText('_______________________________________', 110, 10, 'normal');
+            addText('NOIVO(A) 2', 110, 10, 'bold');
+
+            y += 20;
+            addText('_______________________________________', 20, 10, 'normal');
+            addText('TESTEMUNHA 1', 20, 10, 'bold');
+            y += 10;
+            addText('_______________________________________', 110, 10, 'normal');
+            addText('TESTEMUNHA 2', 110, 10, 'bold');
+
+            y += 20;
+            addText('_______________________________________', 65, 10, 'normal');
+            addText('ESCREVENTE', 65, 10, 'bold');
+
+            doc.setFontSize(8);
+            doc.setFont("helvetica", "italic");
+            doc.text('Cartório de Registro Civil – Jacaraú/PB', doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
+
+            doc.save(`Pre-Cadastro-Casamento-${dataToPrint.protocolNumber}.pdf`);
+        }
+
+        // Handle form submission (Save to Firestore and Generate PDF)
+        document.addEventListener('DOMContentLoaded', () => { // Moved DOMContentLoaded outside the module script
+            isDomContentLoaded = true; // Mark DOM as ready
+
             // Initialize Lucide Icons
             lucide.createIcons();
 
             const alteracaoNomeSelect = document.getElementById('alteracaoNome');
             const campoNovoNome = document.getElementById('campoNovoNome');
+            const marriageForm = document.getElementById('marriageForm'); 
             const generatePdfBtn = document.getElementById('generatePdfBtn');
 
-            // New elements for marriage type
             const casamentoCivilRadio = document.getElementById('casamentoCivil');
             const casamentoReligiosoRadio = document.getElementById('casamentoReligioso');
             const camposReligioso = document.getElementById('camposReligioso');
             const localCelebracaoInput = document.getElementById('localCelebracao');
             const autoridadeReligiosaInput = document.getElementById('autoridadeReligiosa');
 
-            // Show/hide new name field based on "Haverá alteração de nome?" selection
             alteracaoNomeSelect.addEventListener('change', () => {
                 if (alteracaoNomeSelect.value === 'Sim') {
                     campoNovoNome.style.display = 'block';
                 } else {
                     campoNovoNome.style.display = 'none';
-                    document.getElementById('novoNome').value = ''; // Clear field if hidden
+                    document.getElementById('novoNome').value = '';
                 }
             });
 
-            // Function to toggle visibility of religious fields
             function toggleCamposReligioso() {
                 if (casamentoReligiosoRadio.checked) {
                     camposReligioso.style.display = 'block';
                 } else {
                     camposReligioso.style.display = 'none';
-                    // Clear fields if hidden
                     localCelebracaoInput.value = '';
                     autoridadeReligiosaInput.value = '';
                 }
             }
 
-            // Initial call and event listeners for marriage type
-            toggleCamposReligioso(); // Set initial state based on default checked radio
+            toggleCamposReligioso();
             casamentoCivilRadio.addEventListener('change', toggleCamposReligioso);
             casamentoReligiosoRadio.addEventListener('change', toggleCamposReligioso);
 
+            // Handle form submission (Save to Firestore and Generate PDF)
+            marriageForm.addEventListener('submit', async (event) => {
+                event.preventDefault(); // Prevent default form submission
 
-            // Function to format date from YYYY-MM-DD to DD/MM/YYYY
-            function formatDate(dateString) {
-                if (!dateString) return '';
-                const [year, month, day] = dateString.split('-');
-                return `${day}/${month}/${year}`;
-            }
-
-            // Function to display custom message box
-            function showMessageBox(title, message) {
-                const messageBox = document.createElement('div');
-                messageBox.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50';
-                messageBox.innerHTML = `
-                    <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
-                        <p class="text-lg font-semibold ${title.includes('Atenção') ? 'text-red-600' : 'text-[#A0522D]'} mb-4">${title}</p>
-                        <p class="text-gray-700 mb-6">${message}</p>
-                        <button id="closeMessageBox" class="btn-primary">OK</button>
-                    </div>
-                `;
-                document.body.appendChild(messageBox);
-
-                document.getElementById('closeMessageBox').addEventListener('click', () => {
-                    document.body.removeChild(messageBox);
-                });
-            }
-
-            // PDF Generation Logic
-            generatePdfBtn.addEventListener('click', () => {
-                const form = document.getElementById('marriageForm');
-                const formData = new FormData(form);
+                const formData = new FormData(marriageForm);
                 const data = {};
                 for (let [key, value] of formData.entries()) {
                     data[key] = value;
                 }
 
-                // Get selected marriage type
                 data['tipoCasamento'] = document.querySelector('input[name="tipoCasamento"]:checked').value;
 
-                // Basic validation before generating PDF
                 let requiredFields = [
-                    'noivo1Nome', 'noivo1CPF', /* 'noivo1RG', */ 'noivo1DataNascimento', 'noivo1Nacionalidade', 'noivo1Naturalidade', 'noivo1EstadoCivil', 'noivo1Profissao', 'noivo1NomeMae', 'noivo1Endereco',
-                    'noivo2Nome', 'noivo2CPF', /* 'noivo2RG', */ 'noivo2DataNascimento', 'noivo2Nacionalidade', 'noivo2Naturalidade', 'noivo2EstadoCivil', 'noivo2Profissao', 'noivo2NomeMae', 'noivo2Endereco',
+                    'noivo1Nome', 'noivo1CPF', 'noivo1DataNascimento', 'noivo1Nacionalidade', 'noivo1Naturalidade', 'noivo1EstadoCivil', 'noivo1Profissao', 'noivo1NomeMae', 'noivo1Endereco',
+                    'noivo2Nome', 'noivo2CPF', 'noivo2DataNascimento', 'noivo2Nacionalidade', 'noivo2Naturalidade', 'noivo2EstadoCivil', 'noivo2Profissao', 'noivo2NomeMae', 'noivo2Endereco',
                     'regimeBens', 'alteracaoNome', 'dataCasamento', 'horarioCasamento',
                     'testemunha1Nome', 'testemunha1CPF', 'testemunha2Nome', 'testemunha2CPF'
                 ];
 
                 let allFieldsFilled = true;
 
-                // Add conditional fields to validation if religious marriage is selected
                 if (data.tipoCasamento === 'Religioso com Efeito Civil') {
                     requiredFields.push('localCelebracao', 'autoridadeReligiosa');
                 }
@@ -563,7 +1019,7 @@
                         allFieldsFilled = false;
                         element.style.borderColor = 'red';
                     } else if (element) {
-                        element.style.borderColor = '#D8D8D8'; // Reset border color to light gray
+                        element.style.borderColor = '#D8D8D8';
                     }
                 }
 
@@ -572,144 +1028,40 @@
                     document.getElementById('novoNome').style.borderColor = 'red';
                 } else if (data.alteracaoNome === 'Não') {
                      const novoNomeElement = document.getElementById('novoNome');
-                     if (novoNomeElement) novoNomeElement.style.borderColor = '#D8D8D8'; // Reset border color
+                     if (novoNomeElement) novoNomeElement.style.borderColor = '#D8D8D8';
                 }
 
 
                 if (!allFieldsFilled) {
-                    showMessageBox('Atenção!', 'Por favor, preencha todos os campos obrigatórios antes de gerar o PDF.');
+                    showMessageBox('Atenção!', 'Por favor, preencha todos os campos obrigatórios antes de salvar e gerar o PDF.');
                     return;
                 }
 
-                // Create a new jsPDF instance
-                const doc = new jsPDF();
-                let y = 20; // Initial Y position for text
-                const pageHeight = doc.internal.pageSize.getHeight();
-                const bottomMargin = 30; // Margin from the bottom of the page
-
-                // Helper function to add text and advance Y
-                const addText = (text, x, fontSize = 10, fontStyle = 'normal') => {
-                    doc.setFont("helvetica", fontStyle);
-                    doc.setFontSize(fontSize);
-                    doc.text(text, x, y);
-                    y += fontSize / 2.5 + 5; // Adjust line spacing
-                };
-
-                // Helper function to add a section title
-                const addSectionTitle = (title) => {
-                    y += 10; // Space before title
-                    doc.setFont("helvetica", "bold");
-                    doc.setFontSize(14);
-                    doc.text(title, 20, y);
-                    y += 8; // Space after title
-                    doc.setDrawColor(200);
-                    doc.line(20, y, 190, y); // Underline
-                    y += 5; // Space after underline
-                };
-
-                // Function to check and add a new page if needed
-                const checkPageBreak = (requiredSpace = 40) => {
-                    if (y + requiredSpace >= pageHeight - bottomMargin) {
-                        doc.addPage();
-                        y = 20; // Reset Y for new page
-                    }
-                };
-
-                // --- PDF Content Generation ---
-
-                // Page 1 - Title
-                addSectionTitle('FICHA DE PRÉ-CADASTRO DE CASAMENTO CIVIL');
-                y = 40; // Reset Y for main content
-
-                // Tipo de Casamento
-                checkPageBreak(30);
-                addSectionTitle('TIPO DE CASAMENTO');
-                addText(`Tipo de Casamento: ${data.tipoCasamento}`, 20);
-                if (data.tipoCasamento === 'Religioso com Efeito Civil') {
-                    addText(`Local de Celebração: ${data.localCelebracao}`, 20);
-                    addText(`Nome da Autoridade Religiosa: ${data.autoridadeReligiosa}`, 20);
+                if (!userId) {
+                    showMessageBox('Erro de Autenticação', 'Não foi possível salvar os dados. Por favor, recarregue a página e tente novamente.');
+                    return;
                 }
 
-                // Noivo(a) 1
-                checkPageBreak(80); // Estimate space for this section
-                addSectionTitle('DADOS DO(A) NOIVO(A) 1');
-                addText(`Nome completo: ${data.noivo1Nome}`, 20);
-                addText(`CPF: ${data.noivo1CPF}`, 20);
-                // RG field removed from PDF output
-                addText(`Data de nascimento: ${formatDate(data.noivo1DataNascimento)}`, 20);
-                addText(`Nacionalidade: ${data.noivo1Nacionalidade}`, 20);
-                addText(`Naturalidade: ${data.noivo1Naturalidade}`, 20);
-                addText(`Estado civil: ${data.noivo1EstadoCivil}`, 20);
-                addText(`Profissão: ${data.noivo1Profissao}`, 20);
-                addText(`Nome da mãe: ${data.noivo1NomeMae}`, 20);
-                addText(`Nome do pai: ${data.noivo1NomePai || 'Não informado'}`, 20);
-                addText(`Endereço completo: ${data.noivo1Endereco}`, 20);
+                // Generate protocol number before saving
+                data.protocolNumber = generateProtocolNumber();
 
-                // Noivo(a) 2
-                checkPageBreak(80); // Estimate space for this section
-                addSectionTitle('DADOS DO(A) NOIVO(A) 2');
-                addText(`Nome completo: ${data.noivo2Nome}`, 20);
-                addText(`CPF: ${data.noivo2CPF}`, 20);
-                // RG field removed from PDF output
-                addText(`Data de nascimento: ${formatDate(data.noivo2DataNascimento)}`, 20);
-                addText(`Nacionalidade: ${data.noivo2Nacionalidade}`, 20);
-                addText(`Naturalidade: ${data.noivo2Naturalidade}`, 20);
-                addText(`Estado civil: ${data.noivo2EstadoCivil}`, 20);
-                addText(`Profissão: ${data.noivo2Profissao}`, 20);
-                addText(`Nome da mãe: ${data.noivo2NomeMae}`, 20);
-                addText(`Nome do pai: ${data.noivo2NomePai || 'Não informado'}`, 20);
-                addText(`Endereço completo: ${data.noivo2Endereco}`, 20);
+                try {
+                    // Save data to Firestore
+                    const docRef = await addDoc(collection(db, `artifacts/${appId}/users/${userId}/marriageRegistrations`), data);
+                    console.log("Document written with ID: ", docRef.id);
+                    showMessageBox('Sucesso!', `Pré-cadastro salvo com sucesso! Protocolo: ${data.protocolNumber}`);
 
-                // Regime de Bens e Alteração de Nome
-                checkPageBreak(50); // Estimate space for this section
-                addSectionTitle('REGIME DE BENS E ALTERAÇÃO DE NOME');
-                addText(`Regime de bens escolhido: ${data.regimeBens}`, 20);
-                addText(`Haverá alteração de nome? ${data.alteracaoNome}`, 20);
-                if (data.alteracaoNome === 'Sim') {
-                    addText(`Novo nome: ${data.novoNome}`, 20);
+                    // Generate PDF with the saved data (including protocol number)
+                    generatePdf(data);
+
+                    // Optionally clear the form after successful submission
+                    marriageForm.reset();
+                    toggleCamposReligioso(); // Reset religious fields visibility
+                    document.getElementById('campoNovoNome').style.display = 'none'; // Hide new name field
+                } catch (e) {
+                    console.error("Error adding document: ", e);
+                    showMessageBox('Erro', 'Ocorreu um erro ao salvar o pré-cadastro. Tente novamente.');
                 }
-
-                // Data e Horário Pretendidos
-                checkPageBreak(40); // Estimate space for this section
-                addSectionTitle('DATA E HORÁRIO PRETENDIDOS');
-                addText(`Data pretendida para o casamento: ${formatDate(data.dataCasamento)}`, 20);
-                addText(`Horário pretendido: ${data.horarioCasamento}`, 20);
-
-                // Testemunhas
-                checkPageBreak(60); // Estimate space for this section
-                addSectionTitle('DADOS DAS TESTEMUNHAS');
-                addText(`Testemunha 1: ${data.testemunha1Nome} (CPF: ${data.testemunha1CPF})`, 20);
-                addText(`Testemunha 2: ${data.testemunha2Nome} (CPF: ${data.testemunha2CPF})`, 20);
-
-                // Add signature lines
-                checkPageBreak(100); // Estimate space for signatures
-                y += 20;
-                addText('_______________________________________', 20, 10, 'normal');
-                addText('NOIVO(A) 1', 20, 10, 'bold');
-                y += 10;
-                addText('_______________________________________', 110, 10, 'normal');
-                addText('NOIVO(A) 2', 110, 10, 'bold');
-
-                y += 20;
-                addText('_______________________________________', 20, 10, 'normal');
-                addText('TESTEMUNHA 1', 20, 10, 'bold');
-                y += 10;
-                addText('_______________________________________', 110, 10, 'normal');
-                addText('TESTEMUNHA 2', 110, 10, 'bold');
-
-                y += 20;
-                addText('_______________________________________', 65, 10, 'normal');
-                addText('ESCREVENTE', 65, 10, 'bold');
-
-                // Footer
-                doc.setFontSize(8);
-                doc.setFont("helvetica", "italic");
-                // Position footer at the bottom of the current page
-                doc.text('Cartório de Registro Civil – Jacaraú/PB', doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
-
-
-                // Save the PDF
-                doc.save('Pre-Cadastro-Casamento-Jacarau.pdf');
             });
         });
     </script>
