@@ -556,7 +556,7 @@
             </div>
             <div id="preRegistrationsList" class="overflow-x-auto">
                 <p class="loading-text" id="loadingPreRegistrations">Carregando pré-cadastros...</p>
-                <table class="pre-registration-table hidden" id="preRegistrationsTable"> <!-- Added ID here -->
+                <table class="pre-registration-table hidden" id="preRegistrationsTable">
                     <thead>
                         <tr>
                             <th>Protocolo</th>
@@ -578,20 +578,12 @@
 
     <!-- jsPDF library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- Main application logic - Consolidated into a single module script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Function to format date from YYYY-MM-DD to DD/MM/YYYY - MOVED TO GLOBAL SCOPE
-        function formatDate(dateString) {
-            if (!dateString) return '';
-            const [year, month, day] = dateString.split('-');
-            return `${day}/${month}/${year}`;
-        }
-
-        // Ensure jsPDF is available globally - CORRECTED ACCESS
-        const jsPDF = window.jspdf.jsPDF; 
+        import { getFirestore, collection, addDoc, onSnapshot, query, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Firebase configuration (provided by Canvas environment)
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -604,41 +596,55 @@
 
         let userId = null; // To store the authenticated user ID
         let allPreRegistrations = []; // To store all fetched pre-registrations for filtering
-        let isDomContentLoaded = false; // Flag to track DOM readiness
+        let domReady = false; // Flag to track DOM readiness
+
+        // Function to format date from YYYY-MM-DD to DD/MM/YYYY
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const [year, month, day] = dateString.split('-');
+            return `${day}/${month}/${year}`;
+        }
+
+        // Ensure jsPDF is available globally
+        const jsPDF = window.jspdf.jsPDF; 
 
         // Authenticate user
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 userId = user.uid;
                 console.log("Authenticated with UID:", userId);
-                if (isDomContentLoaded) { // Only load if DOM is ready
+                if (domReady) { // If DOM is ready, load data immediately
                     loadPreRegistrations();
+                } else { // Otherwise, wait for DOM to be ready
+                    document.addEventListener('DOMContentLoaded', loadPreRegistrations);
                 }
             } else {
-                // If no user, try to sign in with custom token or anonymously
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     try {
                         await signInWithCustomToken(auth, __initial_auth_token);
                         userId = auth.currentUser.uid;
                         console.log("Signed in with custom token:", userId);
-                        if (isDomContentLoaded) { // Only load if DOM is ready
+                        if (domReady) {
                             loadPreRegistrations();
+                        } else {
+                            document.addEventListener('DOMContentLoaded', loadPreRegistrations);
                         }
                     } catch (error) {
                         console.error("Error signing in with custom token:", error);
-                        // Fallback to anonymous if custom token fails
                         try {
                             await signInAnonymously(auth);
                             userId = auth.currentUser.uid;
                             console.log("Signed in anonymously:", userId);
-                            if (isDomContentLoaded) { // Only load if DOM is ready
+                            if (domReady) {
                                 loadPreRegistrations();
+                            } else {
+                                document.addEventListener('DOMContentLoaded', loadPreRegistrations);
                             }
                         } catch (anonError) {
                             console.error("Error signing in anonymously:", anonError);
-                            // Ensure the element exists before trying to update its text
-                            if (document.getElementById('loadingPreRegistrations')) {
-                                document.getElementById('loadingPreRegistrations').textContent = "Erro ao autenticar. Por favor, recarregue a página.";
+                            const loadingElement = document.getElementById('loadingPreRegistrations');
+                            if (loadingElement) {
+                                loadingElement.textContent = "Erro ao autenticar. Por favor, recarregue a página.";
                             }
                         }
                     }
@@ -647,14 +653,16 @@
                         await signInAnonymously(auth);
                         userId = auth.currentUser.uid;
                         console.log("Signed in anonymously (no custom token):", userId);
-                        if (isDomContentLoaded) { // Only load if DOM is ready
+                        if (domReady) {
                             loadPreRegistrations();
+                        } else {
+                            document.addEventListener('DOMContentLoaded', loadPreRegistrations);
                         }
                     } catch (anonError) {
                         console.error("Error signing in anonymously:", anonError);
-                        // Ensure the element exists before trying to update its text
-                        if (document.getElementById('loadingPreRegistrations')) {
-                            document.getElementById('loadingPreRegistrations').textContent = "Erro ao autenticar. Por favor, recarregue a página.";
+                        const loadingElement = document.getElementById('loadingPreRegistrations');
+                        if (loadingElement) {
+                            loadingElement.textContent = "Erro ao autenticar. Por favor, recarregue a página.";
                         }
                     }
                 }
@@ -676,7 +684,7 @@
             }
 
             const preRegistrationsColRef = collection(db, `artifacts/${appId}/users/${userId}/marriageRegistrations`);
-            const q = query(preRegistrationsColRef); // No orderBy to avoid index issues, sort client-side
+            const q = query(preRegistrationsColRef);
 
             onSnapshot(q, (snapshot) => {
                 allPreRegistrations = [];
@@ -692,50 +700,44 @@
                 });
 
                 displayPreRegistrations(allPreRegistrations);
-                // Ensure elements exist before manipulating classList
-                if (document.getElementById('loadingPreRegistrations')) {
-                    document.getElementById('loadingPreRegistrations').classList.add('hidden');
-                }
+
+                const loadingElement = document.getElementById('loadingPreRegistrations');
+                const tableElement = document.getElementById('preRegistrationsTable');
+                const noPreRegistrationsElement = document.getElementById('noPreRegistrations');
+
+                if (loadingElement) loadingElement.classList.add('hidden');
+
                 if (allPreRegistrations.length > 0) {
-                    if (document.getElementById('preRegistrationsTable')) {
-                        document.getElementById('preRegistrationsTable').classList.remove('hidden');
-                    }
-                    if (document.getElementById('noPreRegistrations')) {
-                        document.getElementById('noPreRegistrations').classList.add('hidden');
-                    }
+                    if (tableElement) tableElement.classList.remove('hidden');
+                    if (noPreRegistrationsElement) noPreRegistrationsElement.classList.add('hidden');
                 } else {
-                    if (document.getElementById('preRegistrationsTable')) {
-                        document.getElementById('preRegistrationsTable').classList.add('hidden');
-                    }
-                    if (document.getElementById('noPreRegistrations')) {
-                        document.getElementById('noPreRegistrations').classList.remove('hidden');
-                    }
+                    if (tableElement) tableElement.classList.add('hidden');
+                    if (noPreRegistrationsElement) noPreRegistrationsElement.classList.remove('hidden');
                 }
             }, (error) => {
                 console.error("Error fetching pre-registrations:", error);
-                if (document.getElementById('loadingPreRegistrations')) {
-                    document.getElementById('loadingPreRegistrations').textContent = "Erro ao carregar pré-cadastros.";
-                    document.getElementById('loadingPreRegistrations').classList.remove('hidden');
+                const loadingElement = document.getElementById('loadingPreRegistrations');
+                const tableElement = document.getElementById('preRegistrationsTable');
+                const noPreRegistrationsElement = document.getElementById('noPreRegistrations');
+
+                if (loadingElement) {
+                    loadingElement.textContent = "Erro ao carregar pré-cadastros.";
+                    loadingElement.classList.remove('hidden');
                 }
-                if (document.getElementById('preRegistrationsTable')) {
-                    document.getElementById('preRegistrationsTable').classList.add('hidden');
-                }
-                if (document.getElementById('noPreRegistrations')) {
-                    document.getElementById('noPreRegistrations').classList.add('hidden');
-                }
+                if (tableElement) tableElement.classList.add('hidden');
+                if (noPreRegistrationsElement) noPreRegistrationsElement.classList.add('hidden');
             });
         }
 
         // Function to display pre-registrations in the table
         function displayPreRegistrations(registrations) {
             const tableBody = document.getElementById('preRegistrationsTableBody');
-            if (!tableBody) { // Add a check for tableBody as well
+            if (!tableBody) {
                 console.error("Table body element not found.");
                 return;
             }
             tableBody.innerHTML = ''; // Clear existing rows
 
-            // Ensure elements exist before manipulating classList
             const noPreRegistrationsElement = document.getElementById('noPreRegistrations');
             const preRegistrationsTableElement = document.getElementById('preRegistrationsTable');
 
@@ -762,6 +764,14 @@
                     </td>
                 `;
             });
+
+            // Re-create Lucide icons for newly added elements in the table
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+                console.log("Lucide icons re-initialized after table update.");
+            } else {
+                console.error("Lucide object not found when updating table.");
+            }
 
             // Add event listeners for view and delete buttons
             tableBody.querySelectorAll('.view-btn').forEach(button => {
@@ -791,15 +801,18 @@
         }
 
         // Event listener for search input
-        document.getElementById('searchPreRegistrations').addEventListener('input', (event) => {
-            const searchTerm = event.target.value.toLowerCase();
-            const filteredRegistrations = allPreRegistrations.filter(reg =>
-                (reg.noivo1Nome && reg.noivo1Nome.toLowerCase().includes(searchTerm)) ||
-                (reg.noivo2Nome && reg.noivo2Nome.toLowerCase().includes(searchTerm)) ||
-                (reg.protocolNumber && reg.protocolNumber.toLowerCase().includes(searchTerm))
-            );
-            displayPreRegistrations(filteredRegistrations);
-        });
+        const searchInput = document.getElementById('searchPreRegistrations');
+        if (searchInput) {
+            searchInput.addEventListener('input', (event) => {
+                const searchTerm = event.target.value.toLowerCase();
+                const filteredRegistrations = allPreRegistrations.filter(reg =>
+                    (reg.noivo1Nome && reg.noivo1Nome.toLowerCase().includes(searchTerm)) ||
+                    (reg.noivo2Nome && reg.noivo2Nome.toLowerCase().includes(searchTerm)) ||
+                    (reg.protocolNumber && reg.protocolNumber.toLowerCase().includes(searchTerm))
+                );
+                displayPreRegistrations(filteredRegistrations);
+            });
+        }
 
         // Modified showMessageBox to include a callback for confirmation
         function showMessageBox(title, message, isConfirm = false, onConfirm = null) {
@@ -947,17 +960,22 @@
             doc.save(`Pre-Cadastro-Casamento-${dataToPrint.protocolNumber}.pdf`);
         }
 
-        // Handle form submission (Save to Firestore and Generate PDF)
-        document.addEventListener('DOMContentLoaded', () => { // Moved DOMContentLoaded outside the module script
-            isDomContentLoaded = true; // Mark DOM as ready
+        // Initialize DOM-dependent elements and event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            domReady = true; // Set flag that DOM is ready
 
-            // Initialize Lucide Icons
-            lucide.createIcons();
+            // Initialize Lucide Icons for static elements
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+                console.log("Lucide icons initialized on DOMContentLoaded.");
+            } else {
+                console.error("Lucide object not found on DOMContentLoaded.");
+            }
 
             const alteracaoNomeSelect = document.getElementById('alteracaoNome');
             const campoNovoNome = document.getElementById('campoNovoNome');
-            const marriageForm = document.getElementById('marriageForm'); 
-            const generatePdfBtn = document.getElementById('generatePdfBtn');
+            const marriageForm = document.getElementById('marriageForm');
+            // const generatePdfBtn = document.getElementById('generatePdfBtn'); // Not directly used here
 
             const casamentoCivilRadio = document.getElementById('casamentoCivil');
             const casamentoReligiosoRadio = document.getElementById('casamentoReligioso');
@@ -965,104 +983,110 @@
             const localCelebracaoInput = document.getElementById('localCelebracao');
             const autoridadeReligiosaInput = document.getElementById('autoridadeReligiosa');
 
-            alteracaoNomeSelect.addEventListener('change', () => {
-                if (alteracaoNomeSelect.value === 'Sim') {
-                    campoNovoNome.style.display = 'block';
-                } else {
-                    campoNovoNome.style.display = 'none';
-                    document.getElementById('novoNome').value = '';
-                }
-            });
+            if (alteracaoNomeSelect) {
+                alteracaoNomeSelect.addEventListener('change', () => {
+                    if (alteracaoNomeSelect.value === 'Sim') {
+                        if (campoNovoNome) campoNovoNome.style.display = 'block';
+                    } else {
+                        if (campoNovoNome) campoNovoNome.style.display = 'none';
+                        const novoNomeElement = document.getElementById('novoNome');
+                        if (novoNomeElement) novoNomeElement.value = '';
+                    }
+                });
+            }
 
             function toggleCamposReligioso() {
-                if (casamentoReligiosoRadio.checked) {
-                    camposReligioso.style.display = 'block';
+                if (casamentoReligiosoRadio && casamentoReligiosoRadio.checked) {
+                    if (camposReligioso) camposReligioso.style.display = 'block';
                 } else {
-                    camposReligioso.style.display = 'none';
-                    localCelebracaoInput.value = '';
-                    autoridadeReligiosaInput.value = '';
+                    if (camposReligioso) camposReligioso.style.display = 'none';
+                    if (localCelebracaoInput) localCelebracaoInput.value = '';
+                    if (autoridadeReligiosaInput) autoridadeReligiosaInput.value = '';
                 }
             }
 
-            toggleCamposReligioso();
-            casamentoCivilRadio.addEventListener('change', toggleCamposReligioso);
-            casamentoReligiosoRadio.addEventListener('change', toggleCamposReligioso);
+            if (casamentoCivilRadio) casamentoCivilRadio.addEventListener('change', toggleCamposReligioso);
+            if (casamentoReligiosoRadio) casamentoReligiosoRadio.addEventListener('change', toggleCamposReligioso);
+            toggleCamposReligioso(); // Initial call
 
             // Handle form submission (Save to Firestore and Generate PDF)
-            marriageForm.addEventListener('submit', async (event) => {
-                event.preventDefault(); // Prevent default form submission
+            if (marriageForm) {
+                marriageForm.addEventListener('submit', async (event) => {
+                    event.preventDefault(); // Prevent default form submission
 
-                const formData = new FormData(marriageForm);
-                const data = {};
-                for (let [key, value] of formData.entries()) {
-                    data[key] = value;
-                }
-
-                data['tipoCasamento'] = document.querySelector('input[name="tipoCasamento"]:checked').value;
-
-                let requiredFields = [
-                    'noivo1Nome', 'noivo1CPF', 'noivo1DataNascimento', 'noivo1Nacionalidade', 'noivo1Naturalidade', 'noivo1EstadoCivil', 'noivo1Profissao', 'noivo1NomeMae', 'noivo1Endereco',
-                    'noivo2Nome', 'noivo2CPF', 'noivo2DataNascimento', 'noivo2Nacionalidade', 'noivo2Naturalidade', 'noivo2EstadoCivil', 'noivo2Profissao', 'noivo2NomeMae', 'noivo2Endereco',
-                    'regimeBens', 'alteracaoNome', 'dataCasamento', 'horarioCasamento',
-                    'testemunha1Nome', 'testemunha1CPF', 'testemunha2Nome', 'testemunha2CPF'
-                ];
-
-                let allFieldsFilled = true;
-
-                if (data.tipoCasamento === 'Religioso com Efeito Civil') {
-                    requiredFields.push('localCelebracao', 'autoridadeReligiosa');
-                }
-
-                for (const field of requiredFields) {
-                    const element = document.getElementById(field);
-                    if (element && (!data[field] || data[field].trim() === '')) {
-                        allFieldsFilled = false;
-                        element.style.borderColor = 'red';
-                    } else if (element) {
-                        element.style.borderColor = '#D8D8D8';
+                    const formData = new FormData(marriageForm);
+                    const data = {};
+                    for (let [key, value] of formData.entries()) {
+                        data[key] = value;
                     }
-                }
 
-                if (data.alteracaoNome === 'Sim' && (!data.novoNome || data.novoNome.trim() === '')) {
-                    allFieldsFilled = false;
-                    document.getElementById('novoNome').style.borderColor = 'red';
-                } else if (data.alteracaoNome === 'Não') {
-                     const novoNomeElement = document.getElementById('novoNome');
-                     if (novoNomeElement) novoNomeElement.style.borderColor = '#D8D8D8';
-                }
+                    data['tipoCasamento'] = document.querySelector('input[name="tipoCasamento"]:checked')?.value;
+
+                    let requiredFields = [
+                        'noivo1Nome', 'noivo1CPF', 'noivo1DataNascimento', 'noivo1Nacionalidade', 'noivo1Naturalidade', 'noivo1EstadoCivil', 'noivo1Profissao', 'noivo1NomeMae', 'noivo1Endereco',
+                        'noivo2Nome', 'noivo2CPF', 'noivo2DataNascimento', 'noivo2Nacionalidade', 'noivo2Naturalidade', 'noivo2EstadoCivil', 'noivo2Profissao', 'noivo2NomeMae', 'noivo2Endereco',
+                        'regimeBens', 'alteracaoNome', 'dataCasamento', 'horarioCasamento',
+                        'testemunha1Nome', 'testemunha1CPF', 'testemunha2Nome', 'testemunha2CPF'
+                    ];
+
+                    let allFieldsFilled = true;
+
+                    if (data.tipoCasamento === 'Religioso com Efeito Civil') {
+                        requiredFields.push('localCelebracao', 'autoridadeReligiosa');
+                    }
+
+                    for (const field of requiredFields) {
+                        const element = document.getElementById(field);
+                        if (element && (!data[field] || data[field].trim() === '')) {
+                            allFieldsFilled = false;
+                            element.style.borderColor = 'red';
+                        } else if (element) {
+                            element.style.borderColor = '#D8D8D8';
+                        }
+                    }
+
+                    if (data.alteracaoNome === 'Sim' && (!data.novoNome || data.novoNome.trim() === '')) {
+                        allFieldsFilled = false;
+                        const novoNomeElement = document.getElementById('novoNome');
+                        if (novoNomeElement) novoNomeElement.style.borderColor = 'red';
+                    } else if (data.alteracaoNome === 'Não') {
+                         const novoNomeElement = document.getElementById('novoNome');
+                         if (novoNomeElement) novoNomeElement.style.borderColor = '#D8D8D8';
+                    }
 
 
-                if (!allFieldsFilled) {
-                    showMessageBox('Atenção!', 'Por favor, preencha todos os campos obrigatórios antes de salvar e gerar o PDF.');
-                    return;
-                }
+                    if (!allFieldsFilled) {
+                        showMessageBox('Atenção!', 'Por favor, preencha todos os campos obrigatórios antes de salvar e gerar o PDF.');
+                        return;
+                    }
 
-                if (!userId) {
-                    showMessageBox('Erro de Autenticação', 'Não foi possível salvar os dados. Por favor, recarregue a página e tente novamente.');
-                    return;
-                }
+                    if (!userId) {
+                        showMessageBox('Erro de Autenticação', 'Não foi possível salvar os dados. Por favor, recarregue a página e tente novamente.');
+                        return;
+                    }
 
-                // Generate protocol number before saving
-                data.protocolNumber = generateProtocolNumber();
+                    // Generate protocol number before saving
+                    data.protocolNumber = generateProtocolNumber();
 
-                try {
-                    // Save data to Firestore
-                    const docRef = await addDoc(collection(db, `artifacts/${appId}/users/${userId}/marriageRegistrations`), data);
-                    console.log("Document written with ID: ", docRef.id);
-                    showMessageBox('Sucesso!', `Pré-cadastro salvo com sucesso! Protocolo: ${data.protocolNumber}`);
+                    try {
+                        // Save data to Firestore
+                        const docRef = await addDoc(collection(db, `artifacts/${appId}/users/${userId}/marriageRegistrations`), data);
+                        console.log("Document written with ID: ", docRef.id);
+                        showMessageBox('Sucesso!', `Pré-cadastro salvo com sucesso! Protocolo: ${data.protocolNumber}`);
 
-                    // Generate PDF with the saved data (including protocol number)
-                    generatePdf(data);
+                        // Generate PDF with the saved data (including protocol number)
+                        generatePdf(data);
 
-                    // Optionally clear the form after successful submission
-                    marriageForm.reset();
-                    toggleCamposReligioso(); // Reset religious fields visibility
-                    document.getElementById('campoNovoNome').style.display = 'none'; // Hide new name field
-                } catch (e) {
-                    console.error("Error adding document: ", e);
-                    showMessageBox('Erro', 'Ocorreu um erro ao salvar o pré-cadastro. Tente novamente.');
-                }
-            });
+                        // Optionally clear the form after successful submission
+                        marriageForm.reset();
+                        toggleCamposReligioso(); // Reset religious fields visibility
+                        if (campoNovoNome) campoNovoNome.style.display = 'none'; // Hide new name field
+                    } catch (e) {
+                        console.error("Error adding document: ", e);
+                        showMessageBox('Erro', 'Ocorreu um erro ao salvar o pré-cadastro. Tente novamente.');
+                    }
+                });
+            }
         });
     </script>
 </body>
