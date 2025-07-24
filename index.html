@@ -3,30 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Habilita Fácil – Pré-Cadastro de Casamento</title>
+    <title>Habilita Fácil – Cadastro de Casamento</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Inter Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #F8F8F8; /* Very light gray */
+            background-color: #F9FAFB; /* Very light, slightly warmer gray */
+            color: #333333; /* Dark charcoal for main text */
         }
         .container {
             max-width: 900px;
-            margin: 2rem auto;
-            padding: 2.5rem; /* Increased padding */
+            margin: 2.5rem auto; /* More margin top/bottom */
+            padding: 3rem; /* Increased padding for more breathing room */
             background-color: #ffffff;
-            border-radius: 16px; /* More rounded corners */
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); /* Softer, deeper shadow */
+            border-radius: 20px; /* Even more rounded corners */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12); /* Deeper, softer shadow */
+            border: 1px solid #F0F0F0; /* Subtle border */
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2.5rem; /* More space below header */
+            color: #A0522D; /* Sienna for header icon/text */
+        }
+        .header h1 {
+            font-size: 2.5rem; /* Larger title */
+            font-weight: 700; /* Bolder title */
+            color: #333333; /* Dark charcoal for title text */
         }
         .form-group label {
             font-weight: 500;
-            color: #555; /* Slightly darker gray for labels */
-            margin-bottom: 0.6rem; /* Increased margin */
+            color: #555555; /* Medium grey for labels */
+            margin-bottom: 0.6rem;
             display: block;
-            font-size: 0.95rem; /* Slightly smaller font for labels */
+            font-size: 0.95rem;
         }
         .form-group input[type="text"],
         .form-group input[type="date"],
@@ -34,12 +51,13 @@
         .form-group select,
         .form-group textarea {
             width: 100%;
-            padding: 0.85rem; /* Increased padding */
-            border: 1px solid #C5C5C5; /* Lighter gray border */
-            border-radius: 10px; /* More rounded input fields */
+            padding: 0.9rem; /* Increased padding */
+            border: 1px solid #D8D8D8; /* Slightly darker light gray border */
+            border-radius: 12px; /* More rounded input fields */
             font-size: 1rem;
-            color: #333; /* Darker text */
+            color: #333333;
             transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            background-color: #FFFFFF; /* Ensure white background */
         }
         .form-group input[type="text"]:focus,
         .form-group input[type="date"]:focus,
@@ -47,8 +65,8 @@
         .form-group select:focus,
         .form-group textarea:focus {
             outline: none;
-            border-color: #A0522D; /* Sienna for focus */
-            box-shadow: 0 0 0 4px rgba(160, 82, 45, 0.25); /* Sienna shadow on focus */
+            border-color: #C27C4E; /* A slightly brighter, more inviting brown for focus */
+            box-shadow: 0 0 0 4px rgba(194, 124, 78, 0.25); /* Matching shadow on focus */
         }
         .checkbox-item {
             display: flex;
@@ -56,18 +74,18 @@
             margin-bottom: 0.75rem;
         }
         .checkbox-item input[type="checkbox"],
-        .form-radio { /* Styling for radio buttons */
+        .form-radio {
             margin-right: 0.75rem;
-            width: 1.25rem;
-            height: 1.25rem;
-            border-radius: 4px; /* Slightly rounded for checkboxes */
-            border: 1px solid #9a9a9a; /* Darker gray border */
+            width: 1.35rem; /* Slightly larger checkbox/radio */
+            height: 1.35rem;
+            border-radius: 6px; /* More rounded for checkboxes */
+            border: 2px solid #9a9a9a; /* Thicker, darker gray border */
             appearance: none;
             -webkit-appearance: none;
             -moz-appearance: none;
             cursor: pointer;
             position: relative;
-            background-color: #EFEFEF; /* Light gray background */
+            background-color: #EFEFEF;
             transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
         }
         .checkbox-item input[type="checkbox"]:checked,
@@ -83,6 +101,7 @@
             transform: translate(-50%, -50%);
             color: white;
             font-size: 0.8rem;
+            font-weight: bold;
         }
         .form-radio {
             border-radius: 50%; /* Make radio buttons round */
@@ -93,40 +112,58 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 0.5rem;
-            height: 0.5rem;
+            width: 0.6rem; /* Larger inner circle */
+            height: 0.6rem;
             border-radius: 50%;
             background-color: white;
         }
 
         .section-title {
-            font-size: 1.6rem; /* Slightly larger title */
+            font-size: 1.8rem; /* Larger section title */
             font-weight: 600;
-            color: #333; /* Darker gray */
-            margin-bottom: 1.8rem; /* Increased margin */
-            padding-bottom: 0.6rem; /* Increased padding */
-            border-bottom: 2px solid #E0E0E0; /* Light gray border */
+            color: #333333;
+            margin-bottom: 2rem; /* More margin */
+            padding-bottom: 0.8rem; /* More padding */
+            border-bottom: 2px solid #E0E0E0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem; /* Space between icon and text */
         }
         .sub-section-title {
-            font-size: 1.25rem; /* Slightly smaller for sub-sections */
+            font-size: 1.35rem; /* Slightly larger for sub-sections */
             font-weight: 600;
             color: #4A4A4A;
-            margin-bottom: 1rem;
+            margin-bottom: 1.2rem; /* More margin */
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .card-section {
+            padding: 1.75rem; /* More padding inside cards */
+            background-color: #FDFDFD; /* Slightly off-white for card background */
+            border-radius: 16px; /* Rounded corners for cards */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06); /* Subtle card shadow */
+            border: 1px solid #F5F5F5; /* Very light border for cards */
+            margin-bottom: 2.5rem; /* Space between cards */
         }
         .btn-primary {
             background-color: #A0522D; /* Sienna */
             color: white;
-            padding: 0.9rem 1.8rem; /* Larger padding for button */
-            border-radius: 10px; /* More rounded button */
+            padding: 1rem 2rem; /* Even larger padding for button */
+            border-radius: 12px; /* More rounded button */
             font-weight: 600;
-            letter-spacing: 0.025em; /* Slight letter spacing */
-            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
-            box-shadow: 0 4px 10px rgba(160, 82, 45, 0.3); /* Button shadow */
+            letter-spacing: 0.03em; /* Slightly more letter spacing */
+            transition: background-color 0.2s ease-in-out, transform 0.15s ease-in-out, box-shadow 0.2s ease-in-out;
+            box-shadow: 0 6px 15px rgba(160, 82, 45, 0.35); /* More prominent button shadow */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem; /* Space between button text and icon */
         }
         .btn-primary:hover {
             background-color: #8B4513; /* Darker Sienna on hover */
-            transform: translateY(-2px); /* Slight lift on hover */
-            box-shadow: 0 6px 12px rgba(139, 69, 19, 0.4); /* Deeper shadow on hover */
+            transform: translateY(-3px); /* More pronounced lift on hover */
+            box-shadow: 0 8px 20px rgba(139, 69, 19, 0.5); /* Deeper shadow on hover */
         }
         .grid-cols-2 {
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -139,20 +176,35 @@
             .grid-cols-2 {
                 grid-template-columns: 1fr; /* Single column on small screens */
             }
+            .header h1 {
+                font-size: 2rem;
+            }
+            .section-title {
+                font-size: 1.5rem;
+            }
+            .sub-section-title {
+                font-size: 1.15rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="text-3xl font-bold text-center text-gray-800 mb-10">Habilita Fácil – Pré-Cadastro de Casamento</h1>
+        <header class="header">
+            <i data-lucide="heart" class="w-10 h-10 text-[#A0522D]"></i> <!-- Icon for header -->
+            <h1>Habilita Fácil – Cadastro de Casamento</h1>
+        </header>
 
         <!-- CHECKLIST INTERATIVO DE DOCUMENTOS -->
-        <section class="mb-10">
-            <h2 class="section-title">1. Checklist Interativo de Documentos</h2>
+        <section class="card-section">
+            <h2 class="section-title">
+                <i data-lucide="clipboard-check" class="w-7 h-7 text-[#A0522D]"></i> <!-- Icon for section title -->
+                1. Checklist Interativo de Documentos
+            </h2>
             <div class="space-y-3">
                 <div class="checkbox-item">
                     <input type="checkbox" id="doc1">
-                    <label for="doc1" class="text-gray-700">RG e CPF originais de ambos os noivos(as)</label>
+                    <label for="doc1" class="text-gray-700">RG e CPF originais e cópias de ambos os noivos(as)</label>
                 </div>
                 <div class="checkbox-item">
                     <input type="checkbox" id="doc2">
@@ -164,7 +216,7 @@
                 </div>
                 <div class="checkbox-item">
                     <input type="checkbox" id="doc4">
-                    <label for="doc4" class="text-gray-700">Documentos das testemunhas</label>
+                    <label for="doc4" class="text-gray-700">Documentos das testemunhas (nome completo e CPF)</label>
                 </div>
                 <div class="checkbox-item">
                     <input type="checkbox" id="doc5">
@@ -174,13 +226,19 @@
         </section>
 
         <!-- FORMULÁRIO DE DADOS DO CASAL -->
-        <section class="mb-10">
-            <h2 class="section-title">2. Formulário de Dados do Casal</h2>
-            <form id="marriageForm" class="space-y-8"> <!-- Increased space-y -->
+        <section class="card-section">
+            <h2 class="section-title">
+                <i data-lucide="users" class="w-7 h-7 text-[#A0522D]"></i> <!-- Icon for section title -->
+                2. Formulário de Dados do Casal
+            </h2>
+            <form id="marriageForm" class="space-y-8">
 
                 <!-- Tipo de Casamento -->
                 <div class="p-5 bg-gray-50 rounded-xl shadow-sm border border-gray-100">
-                    <h3 class="sub-section-title">Tipo de Casamento</h3>
+                    <h3 class="sub-section-title">
+                        <i data-lucide="heart" class="w-5 h-5 text-[#A0522D]"></i>
+                        Tipo de Casamento
+                    </h3>
                     <div class="flex flex-col md:flex-row gap-6">
                         <div class="flex items-center">
                             <input type="radio" id="casamentoCivil" name="tipoCasamento" value="Civil" class="form-radio" checked>
@@ -194,8 +252,11 @@
                 </div>
 
                 <!-- Campos Condicionais para Casamento Religioso -->
-                <div id="camposReligioso" class="space-y-4 p-5 bg-gray-50 rounded-xl shadow-sm border border-gray-100" style="display: none;">
-                    <h3 class="sub-section-title">Detalhes da Celebração Religiosa</h3>
+                <div id="camposReligioso" class="p-5 bg-gray-50 rounded-xl shadow-sm border border-gray-100" style="display: none;">
+                    <h3 class="sub-section-title">
+                        <i data-lucide="church" class="w-5 h-5 text-[#A0522D]"></i>
+                        Detalhes da Celebração Religiosa
+                    </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="form-group">
                             <label for="localCelebracao">Local de celebração:</label>
@@ -210,7 +271,10 @@
 
                 <!-- Noivo(a) 1 -->
                 <div class="p-5 bg-gray-50 rounded-xl shadow-sm border border-gray-100">
-                    <h3 class="sub-section-title">Dados do(a) Noivo(a) 1</h3>
+                    <h3 class="sub-section-title">
+                        <i data-lucide="user" class="w-5 h-5 text-[#A0522D]"></i>
+                        Dados do(a) Noivo(a) 1
+                    </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="form-group">
                             <label for="noivo1Nome">Nome completo:</label>
@@ -261,7 +325,10 @@
 
                 <!-- Noivo(a) 2 -->
                 <div class="p-5 bg-gray-50 rounded-xl shadow-sm border border-gray-100">
-                    <h3 class="sub-section-title">Dados do(a) Noivo(a) 2</h3>
+                    <h3 class="sub-section-title">
+                        <i data-lucide="user" class="w-5 h-5 text-[#A0522D]"></i>
+                        Dados do(a) Noivo(a) 2
+                    </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="form-group">
                             <label for="noivo2Nome">Nome completo:</label>
@@ -312,7 +379,10 @@
 
                 <!-- Regime de Bens e Alteração de Nome -->
                 <div class="p-5 bg-gray-50 rounded-xl shadow-sm border border-gray-100">
-                    <h3 class="sub-section-title">Regime de Bens e Alteração de Nome</h3>
+                    <h3 class="sub-section-title">
+                        <i data-lucide="wallet" class="w-5 h-5 text-[#A0522D]"></i>
+                        Regime de Bens e Alteração de Nome
+                    </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="form-group">
                             <label for="regimeBens">Regime de bens escolhido:</label>
@@ -340,7 +410,10 @@
 
                 <!-- Data e Horário Pretendidos -->
                 <div class="p-5 bg-gray-50 rounded-xl shadow-sm border border-gray-100">
-                    <h3 class="sub-section-title">Data e Horário Pretendidos</h3>
+                    <h3 class="sub-section-title">
+                        <i data-lucide="calendar" class="w-5 h-5 text-[#A0522D]"></i>
+                        Data e Horário Pretendidos
+                    </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="form-group">
                             <label for="dataCasamento">Data pretendida para o casamento:</label>
@@ -355,7 +428,10 @@
 
                 <!-- Testemunhas -->
                 <div class="p-5 bg-gray-50 rounded-xl shadow-sm border border-gray-100">
-                    <h3 class="sub-section-title">Dados das Testemunhas</h3>
+                    <h3 class="sub-section-title">
+                        <i data-lucide="users-round" class="w-5 h-5 text-[#A0522D]"></i>
+                        Dados das Testemunhas
+                    </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="form-group">
                             <label for="testemunha1Nome">Nome completo Testemunha 1:</label>
@@ -377,7 +453,10 @@
                 </div>
 
                 <div class="text-center mt-8">
-                    <button type="button" id="generatePdfBtn" class="btn-primary">Gerar PDF</button>
+                    <button type="button" id="generatePdfBtn" class="btn-primary">
+                        <i data-lucide="file-text" class="w-5 h-5"></i>
+                        Gerar PDF
+                    </button>
                 </div>
             </form>
         </section>
@@ -390,6 +469,9 @@
         const { jsPDF } = window.jspdf;
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Lucide Icons
+            lucide.createIcons();
+
             const alteracaoNomeSelect = document.getElementById('alteracaoNome');
             const campoNovoNome = document.getElementById('campoNovoNome');
             const generatePdfBtn = document.getElementById('generatePdfBtn');
@@ -442,7 +524,7 @@
                 messageBox.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50';
                 messageBox.innerHTML = `
                     <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
-                        <p class="text-lg font-semibold ${title.includes('Atenção') ? 'text-red-600' : 'text-sienna-600'} mb-4">${title}</p>
+                        <p class="text-lg font-semibold ${title.includes('Atenção') ? 'text-red-600' : 'text-[#A0522D]'} mb-4">${title}</p>
                         <p class="text-gray-700 mb-6">${message}</p>
                         <button id="closeMessageBox" class="btn-primary">OK</button>
                     </div>
@@ -487,7 +569,7 @@
                         allFieldsFilled = false;
                         element.style.borderColor = 'red';
                     } else if (element) {
-                        element.style.borderColor = '#C5C5C5'; // Reset border color to light gray
+                        element.style.borderColor = '#D8D8D8'; // Reset border color to light gray
                     }
                 }
 
@@ -496,7 +578,7 @@
                     document.getElementById('novoNome').style.borderColor = 'red';
                 } else if (data.alteracaoNome === 'Não') {
                      const novoNomeElement = document.getElementById('novoNome');
-                     if (novoNomeElement) novoNomeElement.style.borderColor = '#C5C5C5'; // Reset border color
+                     if (novoNomeElement) novoNomeElement.style.borderColor = '#D8D8D8'; // Reset border color
                 }
 
 
