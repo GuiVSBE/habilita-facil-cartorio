@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habilita Fácil – Pré-Cadastro de Casamento Civil</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F8F8; /* Very light gray */
+        }
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .form-group label {
+            font-weight: 500;
+            color: #6B6B6B; /* Medium gray */
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="date"],
+        .form-group input[type="time"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #D4D4D4; /* Light gray border */
+            border-radius: 8px;
+            font-size: 1rem;
+            color: #4A4A4A; /* Darker gray text */
+            transition: border-color 0.2s ease-in-out;
+        }
+        .form-group input[type="text"]:focus,
+        .form-group input[type="date"]:focus,
+        .form-group input[type="time"]:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #8B4513; /* SaddleBrown for focus */
+            box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.2); /* Brown shadow on focus */
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .checkbox-item input[type="checkbox"] {
+            margin-right: 0.75rem;
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 4px;
+            border: 1px solid #9ca3af;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            cursor: pointer;
+            position: relative;
+            background-color: #E0E0E0; /* Light gray background for checkbox */
+        }
+        .checkbox-item input[type="checkbox"]:checked {
+            background-color: #8B4513; /* SaddleBrown when checked */
+            border-color: #8B4513;
+        }
+        .checkbox-item input[type="checkbox"]:checked::after {
+            content: '✔';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 0.8rem;
+        }
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #4A4A4A; /* Darker gray */
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #E0E0E0; /* Light gray border */
+        }
+        .btn-primary {
+            background-color: #A0522D; /* Sienna */
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background-color 0.2s ease-in-out;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .btn-primary:hover {
+            background-color: #8B4513; /* Darker Sienna on hover */
+        }
+        .grid-cols-2 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        /* Removed loading spinner styles as Gemini API features are removed */
+        @media (max-width: 768px) {
+            .container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            .grid-cols-2 {
+                grid-template-columns: 1fr; /* Single column on small screens */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">Habilita Fácil – Pré-Cadastro de Casamento Civil</h1>
+
+        <!-- CHECKLIST INTERATIVO DE DOCUMENTOS -->
+        <section class="mb-10">
+            <h2 class="section-title">1. Checklist Interativo de Documentos</h2>
+            <div class="space-y-3">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="doc1">
+                    <label for="doc1" class="text-gray-700">RG e CPF originais e cópias de ambos os noivos(as)</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="doc2">
+                    <label for="doc2" class="text-gray-700">Certidão de nascimento ou casamento com averbação de divórcio</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="doc3">
+                    <label for="doc3" class="text-gray-700">Comprovante de residência de ambos</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="doc4">
+                    <label for="doc4" class="text-gray-700">Documentos das testemunhas (nome completo e CPF)</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="doc5">
+                    <label for="doc5" class="text-gray-700">Pacto antenupcial (se houver regime diverso do legal)</label>
+                </div>
+            </div>
+        </section>
+
+        <!-- FORMULÁRIO DE DADOS DO CASAL -->
+        <section class="mb-10">
+            <h2 class="section-title">2. Formulário de Dados do Casal</h2>
+            <form id="marriageForm" class="space-y-6">
+                <!-- Noivo(a) 1 -->
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4">Dados do(a) Noivo(a) 1</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label for="noivo1Nome">Nome completo:</label>
+                            <input type="text" id="noivo1Nome" name="noivo1Nome" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="noivo1CPF">CPF:</label>
+                            <input type="text" id="noivo1CPF" name="noivo1CPF" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="noivo1RG">RG:</label>
+                            <input type="text" id="noivo1RG" name="noivo1RG" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="noivo1DataNascimento">Data de nascimento:</label>
+                            <input type="date" id="noivo1DataNascimento" name="noivo1DataNascimento" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="noivo1Nacionalidade">Nacionalidade:</label>
+                            <input type="text" id="noivo1Nacionalidade" name="noivo1Nacionalidade" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="noivo1Naturalidade">Naturalidade:</label>
+                            <input type="text" id="noivo1Naturalidade" name="noivo1Naturalidade" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="noivo1EstadoCivil">Estado civil:</label>
+                            <input type="text" id="noivo1EstadoCivil" name="noivo1EstadoCivil" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="noivo1Profissao">Profissão:</label>
+                            <input type="text" id="noivo1Profissao" name="noivo1Profissao" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="noivo1NomeMae">Nome da mãe:</label>
+                            <input type="text" id="noivo1NomeMae" name="noivo1NomeMae" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="noivo1NomePai">Nome do pai:</label>
+                            <input type="text" id="noivo1NomePai" name="noivo1NomePai">
+                        </div>
+                        <div class="form-group md:col-span-2">
+                            <label for="noivo1Endereco">Endereço completo:</label>
+                            <input type="text" id="noivo1Endereco" name="noivo1Endereco" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Noivo(a) 2 -->
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4 mt-8">Dados do(a) Noivo(a) 2</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label for="noivo2Nome">Nome completo:</label>
+                            <input type="text" id="noivo2Nome" name="noivo2Nome" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="noivo2CPF">CPF:</label>
+                            <input type="text" id="noivo2CPF" name="noivo2CPF" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="noivo2RG">RG:</label>
+                            <input type="text" id="noivo2RG" name="noivo2RG" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="noivo2DataNascimento">Data de nascimento:</label>
+                            <input type="date" id="noivo2DataNascimento" name="noivo2DataNascimento" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="noivo2Nacionalidade">Nacionalidade:</label>
+                            <input type="text" id="noivo2Nacionalidade" name="noivo2Nacionalidade" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="noivo2Naturalidade">Naturalidade:</label>
+                            <input type="text" id="noivo2Naturalidade" name="noivo2Naturalidade" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="noivo2EstadoCivil">Estado civil:</label>
+                            <input type="text" id="noivo2EstadoCivil" name="noivo2EstadoCivil" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="noivo2Profissao">Profissão:</label>
+                            <input type="text" id="noivo2Profissao" name="noivo2Profissao" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="noivo2NomeMae">Nome da mãe:</label>
+                            <input type="text" id="noivo2NomeMae" name="noivo2NomeMae" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="noivo2NomePai">Nome do pai:</label>
+                            <input type="text" id="noivo2NomePai" name="noivo2NomePai">
+                        </div>
+                        <div class="form-group md:col-span-2">
+                            <label for="noivo2Endereco">Endereço completo:</label>
+                            <input type="text" id="noivo2Endereco" name="noivo2Endereco" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Regime de Bens e Alteração de Nome -->
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4 mt-8">Regime de Bens e Alteração de Nome</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label for="regimeBens">Regime de bens escolhido:</label>
+                            <select id="regimeBens" name="regimeBens" required>
+                                <option value="">Selecione</option>
+                                <option value="Comunhão parcial">Comunhão parcial</option>
+                                <option value="Comunhão universal">Comunhão universal</option>
+                                <option value="Separação total">Separação total</option>
+                                <option value="Participação final nos aquestos">Participação final nos aquestos</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="alteracaoNome">Haverá alteração de nome?</label>
+                            <select id="alteracaoNome" name="alteracaoNome" required>
+                                <option value="Não">Não</option>
+                                <option value="Sim">Sim</option>
+                            </select>
+                        </div>
+                        <div class="form-group md:col-span-2" id="campoNovoNome" style="display: none;">
+                            <label for="novoNome">Novo nome (se houver alteração):</label>
+                            <input type="text" id="novoNome" name="novoNome">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data e Horário Pretendidos -->
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4 mt-8">Data e Horário Pretendidos</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label for="dataCasamento">Data pretendida para o casamento:</label>
+                            <input type="date" id="dataCasamento" name="dataCasamento" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="horarioCasamento">Horário pretendido:</label>
+                            <input type="time" id="horarioCasamento" name="horarioCasamento" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testemunhas -->
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4 mt-8">Dados das Testemunhas</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label for="testemunha1Nome">Nome completo Testemunha 1:</label>
+                            <input type="text" id="testemunha1Nome" name="testemunha1Nome" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="testemunha1CPF">CPF Testemunha 1:</label>
+                            <input type="text" id="testemunha1CPF" name="testemunha1CPF" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="testemunha2Nome">Nome completo Testemunha 2:</label>
+                            <input type="text" id="testemunha2Nome" name="testemunha2Nome" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="testemunha2CPF">CPF Testemunha 2:</label>
+                            <input type="text" id="testemunha2CPF" name="testemunha2CPF" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-8">
+                    <button type="button" id="generatePdfBtn" class="btn-primary">Gerar PDF</button>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <!-- jsPDF library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        // Ensure jsPDF is available globally
+        const { jsPDF } = window.jspdf;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const alteracaoNomeSelect = document.getElementById('alteracaoNome');
+            const campoNovoNome = document.getElementById('campoNovoNome');
+            const generatePdfBtn = document.getElementById('generatePdfBtn');
+
+            // Show/hide new name field based on "Haverá alteração de nome?" selection
+            alteracaoNomeSelect.addEventListener('change', () => {
+                if (alteracaoNomeSelect.value === 'Sim') {
+                    campoNovoNome.style.display = 'block';
+                } else {
+                    campoNovoNome.style.display = 'none';
+                    document.getElementById('novoNome').value = ''; // Clear field if hidden
+                }
+            });
+
+            // Function to format date from YYYY-MM-DD to DD/MM/YYYY
+            function formatDate(dateString) {
+                if (!dateString) return '';
+                const [year, month, day] = dateString.split('-');
+                return `${day}/${month}/${year}`;
+            }
+
+            // Function to display custom message box
+            function showMessageBox(title, message) {
+                const messageBox = document.createElement('div');
+                messageBox.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50';
+                messageBox.innerHTML = `
+                    <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
+                        <p class="text-lg font-semibold ${title.includes('Atenção') ? 'text-red-600' : 'text-blue-600'} mb-4">${title}</p>
+                        <p class="text-gray-700 mb-6">${message}</p>
+                        <button id="closeMessageBox" class="btn-primary">OK</button>
+                    </div>
+                `;
+                document.body.appendChild(messageBox);
+
+                document.getElementById('closeMessageBox').addEventListener('click', () => {
+                    document.body.removeChild(messageBox);
+                });
+            }
+
+            // PDF Generation Logic
+            generatePdfBtn.addEventListener('click', () => {
+                const form = document.getElementById('marriageForm');
+                const formData = new FormData(form);
+                const data = {};
+                for (let [key, value] of formData.entries()) {
+                    data[key] = value;
+                }
+
+                // Basic validation before generating PDF
+                const requiredFields = [
+                    'noivo1Nome', 'noivo1CPF', 'noivo1RG', 'noivo1DataNascimento', 'noivo1Nacionalidade', 'noivo1Naturalidade', 'noivo1EstadoCivil', 'noivo1Profissao', 'noivo1NomeMae', 'noivo1Endereco',
+                    'noivo2Nome', 'noivo2CPF', 'noivo2RG', 'noivo2DataNascimento', 'noivo2Nacionalidade', 'noivo2Naturalidade', 'noivo2EstadoCivil', 'noivo2Profissao', 'noivo2NomeMae', 'noivo2Endereco',
+                    'regimeBens', 'alteracaoNome', 'dataCasamento', 'horarioCasamento',
+                    'testemunha1Nome', 'testemunha1CPF', 'testemunha2Nome', 'testemunha2CPF'
+                ];
+
+                let allFieldsFilled = true;
+                for (const field of requiredFields) {
+                    if (!data[field] || data[field].trim() === '') {
+                        allFieldsFilled = false;
+                        document.getElementById(field).style.borderColor = 'red';
+                    } else {
+                        document.getElementById(field).style.borderColor = '#D4D4D4'; // Reset border color to light gray
+                    }
+                }
+
+                if (data.alteracaoNome === 'Sim' && (!data.novoNome || data.novoNome.trim() === '')) {
+                    allFieldsFilled = false;
+                    document.getElementById('novoNome').style.borderColor = 'red';
+                } else if (data.alteracaoNome === 'Não') {
+                     document.getElementById('novoNome').style.borderColor = '#D4D4D4'; // Reset border color
+                }
+
+
+                if (!allFieldsFilled) {
+                    showMessageBox('Atenção!', 'Por favor, preencha todos os campos obrigatórios antes de gerar o PDF.');
+                    return;
+                }
+
+                // Create a new jsPDF instance
+                const doc = new jsPDF();
+                let y = 20; // Initial Y position for text
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const bottomMargin = 30; // Margin from the bottom of the page
+
+                // Helper function to add text and advance Y
+                const addText = (text, x, fontSize = 10, fontStyle = 'normal') => {
+                    doc.setFont("helvetica", fontStyle);
+                    doc.setFontSize(fontSize);
+                    doc.text(text, x, y);
+                    y += fontSize / 2.5 + 5; // Adjust line spacing
+                };
+
+                // Helper function to add a section title
+                const addSectionTitle = (title) => {
+                    y += 10; // Space before title
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(14);
+                    doc.text(title, 20, y);
+                    y += 8; // Space after title
+                    doc.setDrawColor(200);
+                    doc.line(20, y, 190, y); // Underline
+                    y += 5; // Space after underline
+                };
+
+                // Function to check and add a new page if needed
+                const checkPageBreak = (requiredSpace = 40) => {
+                    if (y + requiredSpace >= pageHeight - bottomMargin) {
+                        doc.addPage();
+                        y = 20; // Reset Y for new page
+                    }
+                };
+
+                // --- PDF Content Generation ---
+
+                // Page 1 - Title
+                addSectionTitle('FICHA DE PRÉ-CADASTRO DE CASAMENTO CIVIL');
+                y = 40; // Reset Y for main content
+
+                // Noivo(a) 1
+                checkPageBreak(80); // Estimate space for this section
+                addSectionTitle('DADOS DO(A) NOIVO(A) 1');
+                addText(`Nome completo: ${data.noivo1Nome}`, 20);
+                addText(`CPF: ${data.noivo1CPF}`, 20);
+                addText(`RG: ${data.noivo1RG}`, 20);
+                addText(`Data de nascimento: ${formatDate(data.noivo1DataNascimento)}`, 20);
+                addText(`Nacionalidade: ${data.noivo1Nacionalidade}`, 20);
+                addText(`Naturalidade: ${data.noivo1Naturalidade}`, 20);
+                addText(`Estado civil: ${data.noivo1EstadoCivil}`, 20);
+                addText(`Profissão: ${data.noivo1Profissao}`, 20);
+                addText(`Nome da mãe: ${data.noivo1NomeMae}`, 20);
+                addText(`Nome do pai: ${data.noivo1NomePai || 'Não informado'}`, 20);
+                addText(`Endereço completo: ${data.noivo1Endereco}`, 20);
+
+                // Noivo(a) 2
+                checkPageBreak(80); // Estimate space for this section
+                addSectionTitle('DADOS DO(A) NOIVO(A) 2');
+                addText(`Nome completo: ${data.noivo2Nome}`, 20);
+                addText(`CPF: ${data.noivo2CPF}`, 20);
+                addText(`RG: ${data.noivo2RG}`, 20);
+                addText(`Data de nascimento: ${formatDate(data.noivo2DataNascimento)}`, 20);
+                addText(`Nacionalidade: ${data.noivo2Nacionalidade}`, 20);
+                addText(`Naturalidade: ${data.noivo2Naturalidade}`, 20);
+                addText(`Estado civil: ${data.noivo2EstadoCivil}`, 20);
+                addText(`Profissão: ${data.noivo2Profissao}`, 20);
+                addText(`Nome da mãe: ${data.noivo2NomeMae}`, 20);
+                addText(`Nome do pai: ${data.noivo2NomePai || 'Não informado'}`, 20);
+                addText(`Endereço completo: ${data.noivo2Endereco}`, 20);
+
+                // Regime de Bens e Alteração de Nome
+                checkPageBreak(50); // Estimate space for this section
+                addSectionTitle('REGIME DE BENS E ALTERAÇÃO DE NOME');
+                addText(`Regime de bens escolhido: ${data.regimeBens}`, 20);
+                addText(`Haverá alteração de nome? ${data.alteracaoNome}`, 20);
+                if (data.alteracaoNome === 'Sim') {
+                    addText(`Novo nome: ${data.novoNome}`, 20);
+                }
+
+                // Data e Horário Pretendidos
+                checkPageBreak(40); // Estimate space for this section
+                addSectionTitle('DATA E HORÁRIO PRETENDIDOS');
+                addText(`Data pretendida para o casamento: ${formatDate(data.dataCasamento)}`, 20);
+                addText(`Horário pretendido: ${data.horarioCasamento}`, 20);
+
+                // Testemunhas
+                checkPageBreak(60); // Estimate space for this section
+                addSectionTitle('DADOS DAS TESTEMUNHAS');
+                addText(`Testemunha 1: ${data.testemunha1Nome} (CPF: ${data.testemunha1CPF})`, 20);
+                addText(`Testemunha 2: ${data.testemunha2Nome} (CPF: ${data.testemunha2CPF})`, 20);
+
+                // Add signature lines
+                checkPageBreak(100); // Estimate space for signatures
+                y += 20;
+                addText('_______________________________________', 20, 10, 'normal');
+                addText('NOIVO(A) 1', 20, 10, 'bold');
+                y += 10;
+                addText('_______________________________________', 110, 10, 'normal');
+                addText('NOIVO(A) 2', 110, 10, 'bold');
+
+                y += 20;
+                addText('_______________________________________', 20, 10, 'normal');
+                addText('TESTEMUNHA 1', 20, 10, 'bold');
+                y += 10;
+                addText('_______________________________________', 110, 10, 'normal');
+                addText('TESTEMUNHA 2', 110, 10, 'bold');
+
+                y += 20;
+                addText('_______________________________________', 65, 10, 'normal');
+                addText('ESCREVENTE', 65, 10, 'bold');
+
+                // Footer
+                doc.setFontSize(8);
+                doc.setFont("helvetica", "italic");
+                // Position footer at the bottom of the current page
+                doc.text('Cartório de Registro Civil – Jacaraú/PB', doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
+
+
+                // Save the PDF
+                doc.save('Pre-Cadastro-Casamento-Jacarau.pdf');
+            });
+        });
+    </script>
+</body>
+</html>
