@@ -168,7 +168,6 @@
         .grid-cols-2 {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
-        /* Removed loading-text, pre-registration-table styles */
         @media (max-width: 768px) {
             .container {
                 margin: 1rem;
@@ -186,7 +185,6 @@
             .sub-section-title {
                 font-size: 1.15rem;
             }
-            /* Removed mobile table styles */
         }
     </style>
 </head>
@@ -300,7 +298,13 @@
                         </div>
                         <div class="form-group">
                             <label for="noivo1EstadoCivil">Estado civil:</label>
-                            <input type="text" id="noivo1EstadoCivil" name="noivo1EstadoCivil" required>
+                            <select id="noivo1EstadoCivil" name="noivo1EstadoCivil" required>
+                                <option value="">Selecione</option>
+                                <option value="Solteiro(a)">Solteiro(a)</option>
+                                <option value="Divorciado(a)">Divorciado(a)</option>
+                                <option value="Viúvo(a)">Viúvo(a)</option>
+                                <option value="União Estável">União Estável</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label for="noivo1Profissao">Profissão:</label>
@@ -317,6 +321,10 @@
                         <div class="form-group md:col-span-2">
                             <label for="noivo1Endereco">Endereço completo:</label>
                             <input type="text" id="noivo1Endereco" name="noivo1Endereco" required>
+                        </div>
+                        <div class="form-group md:col-span-2">
+                            <label for="noivo1Contato">Contato (Telefone/Email):</label>
+                            <input type="text" id="noivo1Contato" name="noivo1Contato">
                         </div>
                     </div>
                 </div>
@@ -350,7 +358,13 @@
                         </div>
                         <div class="form-group">
                             <label for="noivo2EstadoCivil">Estado civil:</label>
-                            <input type="text" id="noivo2EstadoCivil" name="noivo2EstadoCivil" required>
+                            <select id="noivo2EstadoCivil" name="noivo2EstadoCivil" required>
+                                <option value="">Selecione</option>
+                                <option value="Solteiro(a)">Solteiro(a)</option>
+                                <option value="Divorciado(a)">Divorciado(a)</option>
+                                <option value="Viúvo(a)">Viúvo(a)</option>
+                                <option value="União Estável">União Estável</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label for="noivo2Profissao">Profissão:</label>
@@ -367,6 +381,10 @@
                         <div class="form-group md:col-span-2">
                             <label for="noivo2Endereco">Endereço completo:</label>
                             <input type="text" id="noivo2Endereco" name="noivo2Endereco" required>
+                        </div>
+                        <div class="form-group md:col-span-2">
+                            <label for="noivo2Contato">Contato (Telefone/Email):</label>
+                            <input type="text" id="noivo2Contato" name="noivo2Contato">
                         </div>
                     </div>
                 </div>
@@ -454,36 +472,6 @@
                 </div>
             </form>
         </section>
-
-        <!-- Gerenciamento de Pré-Cadastros - REMOVED -->
-        <!-- <section class="card-section">
-            <h2 class="section-title">
-                <i data-lucide="list-checks" class="w-7 h-7 text-[#A0522D]"></i>
-                3. Pré-Cadastros Salvos
-            </h2>
-            <div class="form-group mb-4">
-                <label for="searchPreRegistrations">Pesquisar por nome do(a) noivo(a) ou protocolo:</label>
-                <input type="text" id="searchPreRegistrations" placeholder="Digite para pesquisar...">
-            </div>
-            <div id="preRegistrationsList" class="overflow-x-auto">
-                <p class="loading-text" id="loadingPreRegistrations">Carregando pré-cadastros...</p>
-                <table class="pre-registration-table hidden" id="preRegistrationsTable">
-                    <thead>
-                        <tr>
-                            <th>Protocolo</th>
-                            <th>Noivo(a) 1</th>
-                            <th>Noivo(a) 2</th>
-                            <th>Data Casamento</th>
-                            <th>Tipo</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="preRegistrationsTableBody">
-                    </tbody>
-                </table>
-                <p class="loading-text hidden" id="noPreRegistrations">Nenhum pré-cadastro encontrado.</p>
-            </div>
-        </section> -->
     </div>
 
     <!-- jsPDF library -->
@@ -501,7 +489,7 @@
         // Ensure jsPDF is available globally
         const jsPDF = window.jspdf.jsPDF; 
 
-        // Modified showMessageBox to remove confirmation logic
+        // Custom Message Box Function
         function showMessageBox(title, message) {
             const messageBox = document.createElement('div');
             messageBox.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50';
@@ -525,116 +513,202 @@
         function generatePdf(dataToPrint) {
             const doc = new jsPDF();
             let y = 20;
+            const startX = 20;
+            const contentWidth = 170; // A4 width (210mm) - 2 * startX
+            const cardPadding = 10;
+            const cardRadius = 8; // Rounded corners for PDF cards
+            const shadowOffset = 2; // Offset for shadow effect
+            const shadowColor = '#E0E0E0'; // Light gray for shadow
+
             const pageHeight = doc.internal.pageSize.getHeight();
             const bottomMargin = 30;
+            const lineHeight = 10 / 2.5 + 2; // Tighter line spacing (font size / 2.5 + 2)
 
             const addText = (text, x, fontSize = 10, fontStyle = 'normal') => {
                 doc.setFont("helvetica", fontStyle);
                 doc.setFontSize(fontSize);
                 doc.text(text, x, y);
-                y += fontSize / 2.5 + 5;
+                y += lineHeight;
             };
 
-            const addSectionTitle = (title) => {
-                y += 10;
+            const addSectionTitle = (title, currentY) => {
                 doc.setFont("helvetica", "bold");
                 doc.setFontSize(14);
-                doc.text(title, 20, y);
-                y += 8;
-                doc.setDrawColor(200);
-                doc.line(20, y, 190, y);
-                y += 5;
+                doc.setTextColor('#333333');
+                doc.text(title, startX + cardPadding, currentY + cardPadding + 5);
             };
 
-            const checkPageBreak = (requiredSpace = 40) => {
-                if (y + requiredSpace >= pageHeight - bottomMargin) {
+            // Function to draw a card background and content
+            // Returns the new Y position after drawing the card
+            const drawCard = (doc, currentY, title, contentLines, extraSpaceAfter = 8) => { // Reduced extraSpaceAfter to 8
+                const cardY = currentY + 5; // Reduced space before the card to 5
+                let currentContentY = cardY + cardPadding + 15; // Adjusted starting Y for content inside card (title height + padding)
+
+                const titleHeight = 14 / 2.5 + 5;
+                const estimatedContentHeight = contentLines.length * lineHeight;
+                const cardHeight = titleHeight + estimatedContentHeight + (2 * cardPadding);
+
+                // Check page break BEFORE drawing the card
+                if (cardY + cardHeight + extraSpaceAfter >= pageHeight - bottomMargin) {
                     doc.addPage();
-                    y = 20;
+                    currentY = 20; // Reset Y for new page
+                    currentContentY = currentY + cardPadding + 15; // Reset for new page
                 }
+
+                // Draw shadow
+                doc.setFillColor(shadowColor);
+                doc.roundedRect(startX + shadowOffset, currentY + shadowOffset, contentWidth, cardHeight, cardRadius, cardRadius, 'F');
+
+                // Draw card background
+                doc.setFillColor('#FDFDFD'); // Card background color
+                doc.setDrawColor('#F5F5F5'); // Card border color
+                doc.setLineWidth(0.5);
+                doc.roundedRect(startX, currentY, contentWidth, cardHeight, cardRadius, cardRadius, 'FD'); // Fill and Draw
+
+                // Add title inside the card
+                addSectionTitle(title, currentY);
+
+                // Add content lines inside the card
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(10);
+                doc.setTextColor('#333333');
+                contentLines.forEach(line => {
+                    doc.text(line, startX + cardPadding, currentContentY);
+                    currentContentY += lineHeight;
+                });
+
+                return currentY + cardHeight + extraSpaceAfter; // Return new Y position after card + spacing
             };
+
+            // Function to draw a two-column section within a single card
+            // Returns the new Y position after drawing the card
+            const drawTwoColumnCard = (doc, currentY, title, leftContentLines, rightContentLines, extraSpaceAfter = 8) => { // Reduced extraSpaceAfter to 8
+                const innerPadding = 10;
+                const columnMargin = 5; // Space between columns
+                const columnWidth = (contentWidth / 2) - columnMargin; // Width for each column
+
+                const titleHeight = 14 / 2.5 + 5;
+                const maxContentLines = Math.max(leftContentLines.length, rightContentLines.length);
+                const estimatedContentHeight = maxContentLines * lineHeight;
+                const cardHeight = titleHeight + estimatedContentHeight + (2 * innerPadding);
+
+                // Check page break BEFORE drawing the card
+                if (currentY + cardHeight + extraSpaceAfter >= pageHeight - bottomMargin) {
+                    doc.addPage();
+                    currentY = 20; // Reset Y for new page
+                }
+
+                const cardY = currentY + 5; // Reduced space before the card to 5
+                let currentLeftY = cardY + innerPadding + titleHeight + 5;
+                let currentRightY = cardY + innerPadding + titleHeight + 5;
+
+                // Draw shadow
+                doc.setFillColor(shadowColor);
+                doc.roundedRect(startX + shadowOffset, cardY + shadowOffset, contentWidth, cardHeight, cardRadius, cardRadius, 'F');
+
+                // Draw card background
+                doc.setFillColor('#FDFDFD');
+                doc.setDrawColor('#F5F5F5');
+                doc.setLineWidth(0.5);
+                doc.roundedRect(startX, cardY, contentWidth, cardHeight, cardRadius, cardRadius, 'FD');
+
+                // Add title
+                addSectionTitle(title, cardY);
+
+                // Add content to columns
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(10);
+                doc.setTextColor('#333333');
+
+                leftContentLines.forEach(line => {
+                    doc.text(line, startX + innerPadding, currentLeftY);
+                    currentLeftY += lineHeight;
+                });
+
+                rightContentLines.forEach(line => {
+                    doc.text(line, startX + innerPadding + columnWidth + (columnMargin * 2), currentRightY); // Adjust X for right column
+                    currentRightY += lineHeight;
+                });
+
+                return cardY + cardHeight + extraSpaceAfter; // Return new Y position after card + spacing
+            };
+
 
             // --- PDF Content Generation ---
-            addSectionTitle('FICHA DE PRÉ-CADASTRO DE CASAMENTO');
-            y = 40;
+            // Title for the entire document
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(20);
+            doc.setTextColor('#333333');
+            doc.text('FICHA DE PRÉ-CADASTRO DE CASAMENTO', doc.internal.pageSize.getWidth() / 2, y, { align: 'center' });
+            y += 15; // Space after main title
 
-            // Protocol Number removed from PDF content
-
-            checkPageBreak(30);
-            addSectionTitle('TIPO DE CASAMENTO');
-            addText(`Tipo de Casamento: ${dataToPrint.tipoCasamento || 'Não informado'}`, 20);
+            // Tipo de Casamento Card
+            let tipoCasamentoContent = [`Tipo de Casamento: ${dataToPrint.tipoCasamento || 'Não informado'}`];
             if (dataToPrint.tipoCasamento === 'Religioso com Efeito Civil') {
-                addText(`Local de Celebração: ${dataToPrint.localCelebracao || 'Não informado'}`, 20);
-                addText(`Nome da Autoridade Religiosa: ${dataToPrint.autoridadeReligiosa || 'Não informado'}`, 20);
+                tipoCasamentoContent.push(`Local de Celebração: ${dataToPrint.localCelebracao || 'Não informado'}`);
+                tipoCasamentoContent.push(`Nome da Autoridade Religiosa: ${dataToPrint.autoridadeReligiosa || 'Não informado'}`);
             }
+            y = drawCard(doc, y, 'TIPO DE CASAMENTO', tipoCasamentoContent, 5); // Reduced spacing after this card
 
-            checkPageBreak(80);
-            addSectionTitle('DADOS DO(A) NOIVO(A) 1');
-            addText(`Nome completo: ${dataToPrint.noivo1Nome || 'Não informado'}`, 20);
-            addText(`CPF: ${dataToPrint.noivo1CPF || 'Não informado'}`, 20);
-            addText(`Data de nascimento: ${formatDate(dataToPrint.noivo1DataNascimento) || 'Não informado'}`, 20);
-            addText(`Nacionalidade: ${dataToPrint.noivo1Nacionalidade || 'Não informado'}`, 20);
-            addText(`Naturalidade: ${dataToPrint.noivo1Naturalidade || 'Não informado'}`, 20);
-            addText(`Estado civil: ${dataToPrint.noivo1EstadoCivil || 'Não informado'}`, 20);
-            addText(`Profissão: ${dataToPrint.noivo1Profissao || 'Não informado'}`, 20);
-            addText(`Nome da mãe: ${dataToPrint.noivo1NomeMae || 'Não informado'}`, 20);
-            addText(`Nome do pai: ${dataToPrint.noivo1NomePai || 'Não informado'}`, 20);
-            addText(`Endereço completo: ${dataToPrint.noivo1Endereco || 'Não informado'}`, 20);
+            // Dados dos Noivos (Two Columns)
+            let noivo1Content = [
+                `Nome: ${dataToPrint.noivo1Nome || 'Não informado'}`,
+                `CPF: ${dataToPrint.noivo1CPF || 'Não informado'}`,
+                `Nasc.: ${formatDate(dataToPrint.noivo1DataNascimento) || 'Não informado'}`,
+                `Nac.: ${dataToPrint.noivo1Nacionalidade || 'Não informado'}`,
+                `Nat.: ${dataToPrint.noivo1Naturalidade || 'Não informado'}`,
+                `Est. Civil: ${dataToPrint.noivo1EstadoCivil || 'Não informado'}`,
+                `Prof.: ${dataToPrint.noivo1Profissao || 'Não informado'}`,
+                `Mãe: ${dataToPrint.noivo1NomeMae || 'Não informado'}`,
+                `Pai: ${dataToPrint.noivo1NomePai || 'Não informado'}`,
+                `End.: ${dataToPrint.noivo1Endereco || 'Não informado'}`,
+                `Contato: ${dataToPrint.noivo1Contato || 'Não informado'}`
+            ];
+            let noivo2Content = [
+                `Nome: ${dataToPrint.noivo2Nome || 'Não informado'}`,
+                `CPF: ${dataToPrint.noivo2CPF || 'Não informado'}`,
+                `Nasc.: ${formatDate(dataToPrint.noivo2DataNascimento) || 'Não informado'}`,
+                `Nac.: ${dataToPrint.noivo2Nacionalidade || 'Não informado'}`,
+                `Nat.: ${dataToPrint.noivo2Naturalidade || 'Não informado'}`,
+                `Est. Civil: ${dataToPrint.noivo2EstadoCivil || 'Não informado'}`,
+                `Prof.: ${dataToPrint.noivo2Profissao || 'Não informado'}`,
+                `Mãe: ${dataToPrint.noivo2NomeMae || 'Não informado'}`,
+                `Pai: ${dataToPrint.noivo2NomePai || 'Não informado'}`,
+                `End.: ${dataToPrint.noivo2Endereco || 'Não informado'}`,
+                `Contato: ${dataToPrint.noivo2Contato || 'Não informado'}`
+            ];
+            y = drawTwoColumnCard(doc, y, 'DADOS DOS NOIVOS', noivo1Content, noivo2Content, 5); // Reduced spacing after this card
 
-            checkPageBreak(80);
-            addSectionTitle('DADOS DO(A) NOIVO(A) 2');
-            addText(`Nome completo: ${dataToPrint.noivo2Nome || 'Não informado'}`, 20);
-            addText(`CPF: ${dataToPrint.noivo2CPF || 'Não informado'}`, 20);
-            addText(`Data de nascimento: ${formatDate(dataToPrint.noivo2DataNascimento) || 'Não informado'}`, 20);
-            addText(`Nacionalidade: ${dataToPrint.noivo2Nacionalidade || 'Não informado'}`, 20);
-            addText(`Naturalidade: ${dataToPrint.noivo2Naturalidade || 'Não informado'}`, 20);
-            addText(`Estado civil: ${dataToPrint.noivo2EstadoCivil || 'Não informado'}`, 20);
-            addText(`Profissão: ${dataToPrint.noivo2Profissao || 'Não informado'}`, 20);
-            addText(`Nome da mãe: ${dataToPrint.noivo2NomeMae || 'Não informado'}`, 20);
-            addText(`Nome do pai: ${dataToPrint.noivo2NomePai || 'Não informado'}`, 20);
-            addText(`Endereço completo: ${dataToPrint.noivo2Endereco || 'Não informado'}`, 20);
-
-            checkPageBreak(50);
-            addSectionTitle('REGIME DE BENS E ALTERAÇÃO DE NOME');
-            addText(`Regime de bens escolhido: ${dataToPrint.regimeBens || 'Não informado'}`, 20);
-            addText(`Haverá alteração de nome? ${dataToPrint.alteracaoNome || 'Não informado'}`, 20);
+            // Regime de Bens e Alteração de Nome Card (immediately below noivos data)
+            let regimeContent = [
+                `Regime de bens escolhido: ${dataToPrint.regimeBens || 'Não informado'}`,
+                `Haverá alteração de nome? ${dataToPrint.alteracaoNome || 'Não informado'}`
+            ];
             if (dataToPrint.alteracaoNome === 'Sim') {
-                addText(`Novo nome: ${dataToPrint.novoNome || 'Não informado'}`, 20);
+                regimeContent.push(`Novo nome: ${dataToPrint.novoNome || 'Não informado'}`);
             }
+            y = drawCard(doc, y, 'REGIME DE BENS E ALTERAÇÃO DE NOME', regimeContent, 8); // Reduced spacing after this card
 
-            checkPageBreak(40);
-            addSectionTitle('DATA E HORÁRIO PRETENDIDOS');
-            addText(`Data pretendida para o casamento: ${formatDate(dataToPrint.dataCasamento) || 'Não informado'}`, 20);
-            addText(`Horário pretendido: ${dataToPrint.horarioCasamento || 'Não informado'}`, 20);
+            // Data e Horário Pretendidos Card
+            let dataHorarioContent = [
+                `Data pretendida para o casamento: ${formatDate(dataToPrint.dataCasamento) || 'Não informado'}`,
+                `Horário pretendido: ${dataToPrint.horarioCasamento || 'Não informado'}`
+            ];
+            y = drawCard(doc, y, 'DATA E HORÁRIO PRETENDIDOS', dataHorarioContent, 8); // Reduced spacing after this card
 
-            checkPageBreak(60);
-            addSectionTitle('DADOS DAS TESTEMUNHAS');
-            addText(`Testemunha 1: ${dataToPrint.testemunha1Nome || 'Não informado'} (CPF: ${dataToPrint.testemunha1CPF || 'Não informado'})`, 20);
-            addText(`Testemunha 2: ${dataToPrint.testemunha2Nome || 'Não informado'} (CPF: ${dataToPrint.testemunha2CPF || 'Não informado'})`, 20);
+            // Testemunhas Card
+            let testemunhasContent = [
+                `Testemunha 1: ${dataToPrint.testemunha1Nome || 'Não informado'} (CPF: ${dataToPrint.testemunha1CPF || 'Não informado'})`,
+                `Testemunha 2: ${dataToPrint.testemunha2Nome || 'Não informado'} (CPF: ${dataToPrint.testemunha2CPF || 'Não informado'})`
+            ];
+            y = drawCard(doc, y, 'DADOS DAS TESTEMUNHAS', testemunhasContent, 15);
 
-            checkPageBreak(100);
-            y += 20;
-            addText('_______________________________________', 20, 10, 'normal');
-            addText('NOIVO(A) 1', 20, 10, 'bold');
-            y += 10;
-            addText('_______________________________________', 110, 10, 'normal');
-            addText('NOIVO(A) 2', 110, 10, 'bold');
-
-            y += 20;
-            addText('_______________________________________', 20, 10, 'normal');
-            addText('TESTEMUNHA 1', 20, 10, 'bold');
-            y += 10;
-            addText('_______________________________________', 110, 10, 'normal');
-            addText('TESTEMUNHA 2', 110, 10, 'bold');
-
-            y += 20;
-            addText('_______________________________________', 65, 10, 'normal');
-            addText('ESCREVENTE', 65, 10, 'bold');
-
+            // Footer - positioned at the bottom of the last content page
             doc.setFontSize(8);
             doc.setFont("helvetica", "italic");
+            doc.setTextColor('#555555'); // Slightly lighter color for footer
             doc.text('Cartório de Registro Civil – Jacaraú/PB', doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
 
-            // Changed PDF filename to a generic one
             doc.save(`Pre-Cadastro-Casamento.pdf`);
         }
 
@@ -674,10 +748,14 @@
             function toggleCamposReligioso() {
                 if (casamentoReligiosoRadio && casamentoReligiosoRadio.checked) {
                     if (camposReligioso) camposReligioso.style.display = 'block';
+                    // Set required for religious fields when visible
+                    if (localCelebracaoInput) localCelebracaoInput.required = true;
+                    if (autoridadeReligiosaInput) autoridadeReligiosaInput.required = true;
                 } else {
                     if (camposReligioso) camposReligioso.style.display = 'none';
-                    if (localCelebracaoInput) localCelebracaoInput.value = '';
-                    if (autoridadeReligiosaInput) autoridadeReligiosaInput.value = '';
+                    // Remove required for religious fields when hidden
+                    if (localCelebracaoInput) localCelebracaoInput.required = false;
+                    if (autoridadeReligiosaInput) autoridadeReligiosaInput.required = false;
                 }
             }
 
@@ -699,21 +777,26 @@
                     data['tipoCasamento'] = document.querySelector('input[name="tipoCasamento"]:checked')?.value;
 
                     let requiredFields = [
-                        'noivo1Nome', 'noivo1CPF', 'noivo1DataNascimento', 'noivo1Nacionalidade', 'noivo1Naturalidade', 'noivo1EstadoCivil', 'noivo1Profissao', 'noivo1NomeMae', 'noivo1Endereco',
-                        'noivo2Nome', 'noivo2CPF', 'noivo2DataNascimento', 'noivo2Nacionalidade', 'noivo2Naturalidade', 'noivo2EstadoCivil', 'noivo2Profissao', 'noivo2NomeMae', 'noivo2Endereco',
+                        'noivo1Nome', 'noivo1CPF', 'noivo1DataNascimento', 'noivo1Nacionalidade', 'noivo1Naturalidade', 'noivo1EstadoCivil', 'noivo1Profissao', 'noivo1NomeMae', 'noivo1Endereco', 'noivo1Contato',
+                        'noivo2Nome', 'noivo2CPF', 'noivo2DataNascimento', 'noivo2Nacionalidade', 'noivo2Naturalidade', 'noivo2EstadoCivil', 'noivo2Profissao', 'noivo2NomeMae', 'noivo2Endereco', 'noivo2Contato',
                         'regimeBens', 'alteracaoNome', 'dataCasamento', 'horarioCasamento',
                         'testemunha1Nome', 'testemunha1CPF', 'testemunha2Nome', 'testemunha2CPF'
                     ];
 
+
                     let allFieldsFilled = true;
 
                     if (data.tipoCasamento === 'Religioso com Efeito Civil') {
-                        requiredFields.push('localCelebracao', 'autoridadeReligiosa');
+                        // Only add to requiredFields if they are visible
+                        if (camposReligioso && camposReligioso.style.display !== 'none') {
+                            requiredFields.push('localCelebracao', 'autoridadeReligiosa');
+                        }
                     }
 
                     for (const field of requiredFields) {
                         const element = document.getElementById(field);
-                        if (element && (!data[field] || data[field].trim() === '')) {
+                        // Check if element exists and is visible (for conditional fields)
+                        if (element && (!data[field] || data[field].trim() === '') && element.offsetParent !== null) {
                             allFieldsFilled = false;
                             element.style.borderColor = 'red';
                         } else if (element) {
