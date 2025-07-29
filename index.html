@@ -337,7 +337,7 @@
         };
 
         // PDF Generation Logic (adapted for React data)
-        const generatePdf = (dataToPrint) => {
+        const generatePdf = (dataToPrint, showMessageBox) => {
             const doc = new jsPDF();
             let y = 20;
             const startX = 20;
@@ -537,150 +537,581 @@
             doc.text('Cartório de Registro Civil – Jacaraú/PB', doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
 
             doc.save(`Pre-Cadastro-Casamento.pdf`);
-        }
+        };
 
-        // Main application logic
-        document.addEventListener('DOMContentLoaded', () => {
-            // Initialize Lucide Icons for static elements
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-                console.log("Lucide icons initialized on DOMContentLoaded.");
-            } else {
-                console.error("Lucide object not found on DOMContentLoaded.");
-            }
-
-            const alteracaoNomeSelect = document.getElementById('alteracaoNome');
-            const campoNovoNome = document.getElementById('campoNovoNome');
-            const marriageForm = document.getElementById('marriageForm');
-            const generatePdfBtn = document.getElementById('generatePdfBtn');
-
-            const casamentoCivilRadio = document.getElementById('casamentoCivil');
-            const casamentoReligiosoRadio = document.getElementById('casamentoReligioso');
-            const camposReligioso = document.getElementById('camposReligioso');
-            const localCelebracaoInput = document.getElementById('localCelebracao');
-            const autoridadeReligiosaInput = document.getElementById('autoridadeReligiosa');
-
-            // Landing Page / Tool Toggle
-            const landingPage = document.getElementById('landing-page');
-            const habilitaFacilTool = document.getElementById('habilita-facil-tool');
-            const accessToolButton = document.getElementById('accessToolButton');
-            const backToLandingButton = document.getElementById('backToLandingButton');
-
-            if (accessToolButton) {
-                accessToolButton.addEventListener('click', () => {
-                    if (landingPage) landingPage.style.display = 'none';
-                    if (habilitaFacilTool) habilitaFacilTool.style.display = 'block';
-                    // Re-initialize Lucide icons just in case they were not rendered on hidden elements
-                    if (typeof lucide !== 'undefined') {
-                        lucide.createIcons();
-                    }
-                });
-            }
-
-            if (backToLandingButton) {
-                backToLandingButton.addEventListener('click', () => {
-                    if (landingPage) landingPage.style.display = 'block';
-                    if (habilitaFacilTool) habilitaFacilTool.style.display = 'none';
-                });
-            }
-
-
-            if (alteracaoNomeSelect) {
-                alteracaoNomeSelect.addEventListener('change', () => {
-                    if (alteracaoNomeSelect.value === 'Sim') {
-                        if (campoNovoNome) campoNovoNome.style.display = 'block';
-                    } else {
-                        if (campoNovoNome) campoNovoNome.style.display = 'none';
-                        const novoNomeElement = document.getElementById('novoNome');
-                        if (novoNomeElement) novoNomeElement.value = '';
-                    }
-                });
-            }
-
-            function toggleCamposReligioso() {
-                if (casamentoReligiosoRadio && casamentoReligiosoRadio.checked) {
-                    if (camposReligioso) camposReligioso.style.display = 'block';
-                    // Set required for religious fields when visible
-                    if (localCelebracaoInput) localCelebracaoInput.required = true;
-                    if (autoridadeReligiosaInput) autoridadeReligiosaInput.required = true;
-                } else {
-                    if (camposReligioso) camposReligioso.style.display = 'none';
-                    // Remove required for religious fields when hidden
-                    if (localCelebracaoInput) localCelebracaoInput.required = false;
-                    if (autoridadeReligiosaInput) autoridadeReligiosaInput.required = false;
+        // Landing Page Component
+        const LandingPage = ({ onAccessTool }) => {
+            React.useEffect(() => {
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
                 }
-            }
+            }, []);
 
-            if (casamentoCivilRadio) casamentoCivilRadio.addEventListener('change', toggleCamposReligioso);
-            if (casamentoReligiosoRadio) casamentoReligiosoRadio.addEventListener('change', toggleCamposReligioso);
-            toggleCamposReligioso(); // Initial call
+            return (
+                <section id="landing-page" className="container section-spacing">
+                    <div className="header-landing">
+                        <p className="text-xl font-medium text-[#A0522D] mb-4">Transforme seu Cartório de Registro Civil</p>
+                        <h1>Sua Jornada para a Excelência Começa Aqui.</h1>
+                        <p>
+                            Olá! Sou [Seu Nome], especialista em consultoria para Cartórios de Registro Civil das Pessoas Naturais.
+                            Se você busca otimizar processos, aprimorar o atendimento e elevar seu cartório a um novo patamar de eficiência e reconhecimento,
+                            você está no lugar certo.
+                        </p>
+                    </div>
 
-            // Handle form submission (Generate PDF directly)
-            if (generatePdfBtn) {
-                generatePdfBtn.addEventListener('click', (event) => {
-                    event.preventDefault(); // Prevent default form submission
+                    <div className="content-block">
+                        <img src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Interior de um cartório moderno e organizado" />
+                        <div>
+                            <h2>Desafios Atuais? Soluções Inovadoras.</h2>
+                            <p>
+                                O dia a dia de um cartório é repleto de complexidades e demandas crescentes. A burocracia, a falta de padronização e a dificuldade em se adaptar às novas tecnologias podem estagnar o crescimento e a qualidade dos serviços. Minha mentoria é desenhada para identificar esses gargalos e implementar estratégias personalizadas que trarão resultados reais e duradouros.
+                            </p>
+                        </div>
+                    </div>
 
-                    const formData = new FormData(marriageForm);
-                    const data = {};
-                    for (let [key, value] of formData.entries()) {
-                        data[key] = value;
-                    }
+                    <div className="content-block reverse">
+                        <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Profissionais em reunião de consultoria" />
+                        <div>
+                            <h2>Por que Minha Mentoria é Essencial para o Seu Cartório?</h2>
+                            <p>
+                                Sem uma orientação especializada, a jornada para a excelência pode ser longa e frustrante. Minha metodologia foca em capacitar sua equipe, simplificar fluxos de trabalho e integrar soluções tecnológicas que farão seu cartório se destacar. Não se contente com o básico; <strong>sem minha mentoria, seu cartório jamais chegará ao próximo nível de eficiência e reconhecimento.</strong> Invista no futuro do seu negócio e veja a transformação acontecer!
+                            </p>
+                        </div>
+                    </div>
 
-                    data['tipoCasamento'] = document.querySelector('input[name="tipoCasamento"]:checked')?.value;
+                    <div className="text-center mt-12">
+                        <button onClick={onAccessTool} className="cta-button">
+                            <i data-lucide="arrow-right" className="w-6 h-6"></i>
+                            Acessar Ferramenta Habilita Fácil
+                        </button>
+                    </div>
 
-                    let requiredFields = [
-                        'noivo1Nome', 'noivo1CPF', 'noivo1DataNascimento', 'noivo1Nacionalidade', 'noivo1Naturalidade', 'noivo1EstadoCivil', 'noivo1Profissao', 'noivo1NomeMae', 'noivo1Endereco', 'noivo1Contato',
-                        'noivo2Nome', 'noivo2CPF', 'noivo2DataNascimento', 'noivo2Nacionalidade', 'noivo2Naturalidade', 'noivo2EstadoCivil', 'noivo2Profissao', 'noivo2NomeMae', 'noivo2Endereco', 'noivo2Contato',
-                        'regimeBens', 'alteracaoNome', 'dataCasamento', 'horarioCasamento',
-                        'testemunha1Nome', 'testemunha1CPF', 'testemunha2Nome', 'testemunha2CPF'
-                    ];
+                    <div className="contact-section">
+                        <h2>Fale Comigo</h2>
+                        <p className="mb-6 text-lg text-gray-700">Estou pronto para ajudar seu cartório a prosperar. Entre em contato!</p>
+                        <div className="contact-links">
+                            <a href="https://wa.me/55XXYYYYYYYYY" target="_blank" rel="noopener noreferrer">
+                                <i data-lucide="whatsapp"></i>
+                                WhatsApp
+                            </a>
+                            <a href="https://instagram.com/seuinstagram" target="_blank" rel="noopener noreferrer">
+                                <i data-lucide="instagram"></i>
+                                Instagram
+                            </a>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
 
+        // Habilita Fácil Tool Component
+        const HabilitaFacilTool = ({ onBackToLanding }) => {
+            const [formData, setFormData] = React.useState({
+                tipoCasamento: 'Civil',
+                localCelebracao: '',
+                autoridadeReligiosa: '',
+                noivo1Nome: '',
+                noivo1CPF: '',
+                noivo1DataNascimento: '',
+                noivo1Nacionalidade: '',
+                noivo1Naturalidade: '',
+                noivo1EstadoCivil: '',
+                noivo1Profissao: '',
+                noivo1NomeMae: '',
+                noivo1NomePai: '',
+                noivo1Endereco: '',
+                noivo1Contato: '',
+                noivo2Nome: '',
+                noivo2CPF: '',
+                noivo2DataNascimento: '',
+                noivo2Nacionalidade: '',
+                noivo2Naturalidade: '',
+                noivo2EstadoCivil: '',
+                noivo2Profissao: '',
+                noivo2NomeMae: '',
+                noivo2NomePai: '',
+                noivo2Endereco: '',
+                noivo2Contato: '',
+                regimeBens: '',
+                alteracaoNome: 'Não',
+                novoNome: '',
+                dataCasamento: '',
+                horarioCasamento: '',
+                testemunha1Nome: '',
+                testemunha1CPF: '',
+                testemunha2Nome: '',
+                testemunha2CPF: '',
+            });
 
-                    let allFieldsFilled = true;
+            const [showReligiousFields, setShowReligiousFields] = React.useState(false);
+            const [showNewNameField, setShowNewNameField] = React.useState(false);
+            const [messageBox, setMessageBox] = React.useState(null);
 
-                    if (data.tipoCasamento === 'Religioso com Efeito Civil') {
-                        // Only add to requiredFields if they are visible
-                        if (camposReligioso && camposReligioso.style.display !== 'none') {
-                            requiredFields.push('localCelebracao', 'autoridadeReligiosa');
-                        }
-                    }
+            // useEffect to initialize Lucide icons after component mounts and updates
+            React.useEffect(() => {
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }, []); // Empty dependency array means this runs once after initial render
 
-                    for (const field of requiredFields) {
-                        const element = document.getElementById(field);
-                        // Check if element exists and is visible (for conditional fields)
-                        if (element && (!data[field] || data[field].trim() === '') && element.offsetParent !== null) {
-                            allFieldsFilled = false;
-                            element.style.borderColor = 'red';
-                        } else if (element) {
-                            element.style.borderColor = '#D8D8D8';
-                        }
-                    }
+            // Handle form field changes
+            const handleChange = (e) => {
+                const { name, value, type, checked } = e.target;
+                setFormData(prev => ({
+                    ...prev,
+                    [name]: type === 'checkbox' ? checked : value
+                }));
+            };
 
-                    if (data.alteracaoNome === 'Sim' && (!data.novoNome || data.novoNome.trim() === '')) {
+            // Handle radio button changes for marriage type
+            const handleMarriageTypeChange = (e) => {
+                const { value } = e.target;
+                setFormData(prev => ({ ...prev, tipoCasamento: value }));
+                setShowReligiousFields(value === 'Religioso com Efeito Civil');
+            };
+
+            // Handle name change selection
+            const handleAlteracaoNomeChange = (e) => {
+                const { value } = e.target;
+                setFormData(prev => ({ ...prev, alteracaoNome: value }));
+                setShowNewNameField(value === 'Sim');
+                if (value === 'Não') {
+                    setFormData(prev => ({ ...prev, novoNome: '' })); // Clear new name if not altering
+                }
+            };
+
+            // Form submission handler
+            const handleSubmit = (e) => {
+                e.preventDefault();
+
+                let requiredFields = [
+                    'noivo1Nome', 'noivo1CPF', 'noivo1DataNascimento', 'noivo1Nacionalidade', 'noivo1Naturalidade', 'noivo1EstadoCivil', 'noivo1Profissao', 'noivo1NomeMae', 'noivo1Endereco', 'noivo1Contato',
+                    'noivo2Nome', 'noivo2CPF', 'noivo2DataNascimento', 'noivo2Nacionalidade', 'noivo2Naturalidade', 'noivo2EstadoCivil', 'noivo2Profissao', 'noivo2NomeMae', 'noivo2Endereco', 'noivo2Contato',
+                    'regimeBens', 'alteracaoNome', 'dataCasamento', 'horarioCasamento',
+                    'testemunha1Nome', 'testemunha1CPF', 'testemunha2Nome', 'testemunha2CPF'
+                ];
+
+                let allFieldsFilled = true;
+
+                if (formData.tipoCasamento === 'Religioso com Efeito Civil') {
+                    requiredFields.push('localCelebracao', 'autoridadeReligiosa');
+                }
+
+                for (const field of requiredFields) {
+                    const element = document.getElementById(field); // Get element by ID for validation styling
+                    if (!formData[field] || String(formData[field]).trim() === '') {
                         allFieldsFilled = false;
-                        const novoNomeElement = document.getElementById('novoNome');
-                        if (novoNomeElement) novoNomeElement.style.borderColor = 'red';
-                    } else if (data.alteracaoNome === 'Não') {
-                         const novoNomeElement = document.getElementById('novoNome');
-                         if (novoNomeElement) novoNomeElement.style.borderColor = '#D8D8D8';
+                        if (element) element.style.borderColor = 'red';
+                    } else {
+                        if (element) element.style.borderColor = '#D8D8D8'; // Reset border color
                     }
+                }
+
+                if (formData.alteracaoNome === 'Sim' && (!formData.novoNome || String(formData.novoNome).trim() === '')) {
+                    allFieldsFilled = false;
+                    const novoNomeElement = document.getElementById('novoNome');
+                    if (novoNomeElement) novoNomeElement.style.borderColor = 'red';
+                } else if (formData.alteracaoNome === 'Não') {
+                    const novoNomeElement = document.getElementById('novoNome');
+                    if (novoNomeElement) novoNomeElement.style.borderColor = '#D8D8D8';
+                }
 
 
-                    if (!allFieldsFilled) {
-                        showMessageBox('Atenção!', 'Por favor, preencha todos os campos obrigatórios antes de gerar o PDF.');
-                        return;
-                    }
+                if (!allFieldsFilled) {
+                    setMessageBox({
+                        title: 'Atenção!',
+                        message: 'Por favor, preencha todos os campos obrigatórios antes de gerar o PDF.'
+                    });
+                    return;
+                }
 
-                    // Generate PDF with the form data
-                    generatePdf(data);
+                generatePdf(formData, setMessageBox); // Pass setMessageBox to PDF function
 
-                    // Optionally clear the form after successful submission
-                    marriageForm.reset();
-                    toggleCamposReligioso(); // Reset religious fields visibility
-                    if (campoNovoNome) campoNovoNome.style.display = 'none'; // Hide new name field
+                // Optionally clear the form after successful submission
+                setFormData({
+                    tipoCasamento: 'Civil',
+                    localCelebracao: '',
+                    autoridadeReligiosa: '',
+                    noivo1Nome: '',
+                    noivo1CPF: '',
+                    noivo1DataNascimento: '',
+                    noivo1Nacionalidade: '',
+                    noivo1Naturalidade: '',
+                    noivo1EstadoCivil: '',
+                    noivo1Profissao: '',
+                    noivo1NomeMae: '',
+                    noivo1NomePai: '',
+                    noivo1Endereco: '',
+                    noivo1Contato: '',
+                    noivo2Nome: '',
+                    noivo2CPF: '',
+                    noivo2DataNascimento: '',
+                    noivo2Nacionalidade: '',
+                    noivo2Naturalidade: '',
+                    noivo2EstadoCivil: '',
+                    noivo2Profissao: '',
+                    noivo2NomeMae: '',
+                    noivo2NomePai: '',
+                    noivo2Endereco: '',
+                    noivo2Contato: '',
+                    regimeBens: '',
+                    alteracaoNome: 'Não',
+                    novoNome: '',
+                    dataCasamento: '',
+                    horarioCasamento: '',
+                    testemunha1Nome: '',
+                    testemunha1CPF: '',
+                    testemunha2Nome: '',
+                    testemunha2CPF: '',
                 });
-            }
-        });
+                setShowReligiousFields(false);
+                setShowNewNameField(false);
+            };
+
+            return (
+                <section className="habilita-tool-section container">
+                    <div className="text-center mb-8">
+                        <button onClick={onBackToLanding} className="cta-button">
+                            <i data-lucide="arrow-left" className="w-6 h-6"></i>
+                            Voltar para a Consultoria
+                        </button>
+                    </div>
+                    <header className="header">
+                        <i data-lucide="heart" className="w-10 h-10 text-[#A0522D]"></i>
+                        <h1>Habilita Fácil – Cadastro de Casamento</h1>
+                    </header>
+
+                    {/* CHECKLIST INTERATIVO DE DOCUMENTOS */}
+                    <section className="card-section">
+                        <h2 className="section-title">
+                            <i data-lucide="clipboard-check" className="w-7 h-7 text-[#A0522D]"></i>
+                            1. Checklist Interativo de Documentos
+                        </h2>
+                        <div className="space-y-3">
+                            <div className="checkbox-item">
+                                <input type="checkbox" id="doc1" />
+                                <label htmlFor="doc1" className="text-gray-700">Identidade e CPF originais de ambos os noivos(as)</label>
+                            </div>
+                            <div className="checkbox-item">
+                                <input type="checkbox" id="doc2" />
+                                <label htmlFor="doc2" className="text-gray-700">Certidão de nascimento ou casamento com averbação de divórcio</label>
+                            </div>
+                            <div className="checkbox-item">
+                                <input type="checkbox" id="doc3" />
+                                <label htmlFor="doc3" className="text-gray-700">Comprovante de residência de ambos</label>
+                            </div>
+                            <div className="checkbox-item">
+                                <input type="checkbox" id="doc4" />
+                                <label htmlFor="doc4" className="text-gray-700">Documentos das testemunhas (nome completo e CPF)</label>
+                            </div>
+                            <div className="checkbox-item">
+                                <input type="checkbox" id="doc5" />
+                                <label htmlFor="doc5" className="text-gray-700">Pacto antenupcial (se houver regime diverso do legal)</label>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* FORMULÁRIO DE DADOS DO CASAL */}
+                    <section className="card-section">
+                        <h2 className="section-title">
+                            <i data-lucide="users" className="w-7 h-7 text-[#A0522D]"></i>
+                            2. Formulário de Dados do Casal
+                        </h2>
+                        <form onSubmit={handleSubmit} className="space-y-8">
+
+                            {/* Tipo de Casamento */}
+                            <div className="p-5 bg-gray-50 rounded-xl shadow-sm border border-gray-100">
+                                <h3 className="sub-section-title">
+                                    <i data-lucide="heart" className="w-5 h-5 text-[#A0522D]"></i>
+                                    Tipo de Casamento
+                                </h3>
+                                <div className="flex flex-col md:flex-row gap-6">
+                                    <div className="flex items-center">
+                                        <input type="radio" id="casamentoCivil" name="tipoCasamento" value="Civil" className="form-radio"
+                                            checked={formData.tipoCasamento === 'Civil'} onChange={handleMarriageTypeChange} />
+                                        <label htmlFor="casamentoCivil" className="ml-2 text-gray-700">Civil</label>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <input type="radio" id="casamentoReligioso" name="tipoCasamento" value="Religioso com Efeito Civil" className="form-radio"
+                                            checked={formData.tipoCasamento === 'Religioso com Efeito Civil'} onChange={handleMarriageTypeChange} />
+                                        <label htmlFor="casamentoReligioso" className="ml-2 text-gray-700">Religioso com Efeito Civil</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Campos Condicionais para Casamento Religioso */}
+                            {showReligiousFields && (
+                                <div id="camposReligioso" className="p-5 bg-gray-50 rounded-xl shadow-sm border border-gray-100">
+                                    <h3 className="sub-section-title">
+                                        <i data-lucide="church" className="w-5 h-5 text-[#A0522D]"></i>
+                                        Detalhes da Celebração Religiosa
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="form-group">
+                                            <label htmlFor="localCelebracao">Local de celebração:</label>
+                                            <input type="text" id="localCelebracao" name="localCelebracao" value={formData.localCelebracao} onChange={handleChange} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label htmlFor="autoridadeReligiosa">Nome da autoridade religiosa:</label>
+                                            <input type="text" id="autoridadeReligiosa" name="autoridadeReligiosa" value={formData.autoridadeReligiosa} onChange={handleChange} />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Noivo(a) 1 */}
+                            <div className="p-5 bg-gray-50 rounded-xl shadow-sm border border-gray-100">
+                                <h3 className="sub-section-title">
+                                    <i data-lucide="user" className="w-5 h-5 text-[#A0522D]"></i>
+                                    Dados do(a) Noivo(a) 1
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="form-group">
+                                        <label htmlFor="noivo1Nome">Nome completo:</label>
+                                        <input type="text" id="noivo1Nome" name="noivo1Nome" value={formData.noivo1Nome} onChange={handleChange} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="noivo1CPF">CPF:</label>
+                                        <input type="text" id="noivo1CPF" name="noivo1CPF" value={formData.noivo1CPF} onChange={handleChange} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="noivo1DataNascimento">Data de nascimento:</label>
+                                        <input type="date" id="noivo1DataNascimento" name="noivo1DataNascimento" value={formData.noivo1DataNascimento} onChange={handleChange} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="noivo1Nacionalidade">Nacionalidade:</label>
+                                        <input type="text" id="noivo1Nacionalidade" name="noivo1Nacionalidade" value={formData.noivo1Nacionalidade} onChange={handleChange} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="noivo1Naturalidade">Naturalidade:</label>
+                                        <input type="text" id="noivo1Naturalidade" name="noivo1Naturalidade" value={formData.noivo1Naturalidade} onChange={handleChange} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="noivo1EstadoCivil">Estado civil:</label>
+                                        <select id="noivo1EstadoCivil" name="noivo1EstadoCivil" value={formData.noivo1EstadoCivil} onChange={handleChange} required>
+                                            <option value="">Selecione</option>
+                                            <option value="Solteiro(a)">Solteiro(a)</option>
+                                            <option value="Divorciado(a)">Divorciado(a)</option>
+                                            <option value="Viúvo(a)">Viúvo(a)</option>
+                                            <option value="União Estável">União Estável</option>
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="noivo1Profissao">Profissão:</label>
+                                        <input type="text" id="noivo1Profissao" name="noivo1Profissao" value={formData.noivo1Profissao} onChange={handleChange} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="noivo1NomeMae">Nome da mãe:</label>
+                                        <input type="text" id="noivo1NomeMae" name="noivo1NomeMae" value={formData.noivo1NomeMae} onChange={handleChange} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="noivo1NomePai">Nome do pai:</label>
+                                        <input type="text" id="noivo1NomePai" name="noivo1NomePai" value={formData.noivo1NomePai} onChange={handleChange} />
+                                    </div>
+                                    <div className="form-group md:col-span-2">
+                                        <label htmlFor="noivo1Endereco">Endereço completo:</label>
+                                        <input type="text" id="noivo1Endereco" name="noivo1Endereco" value={formData.noivo1Endereco} onChange={handleChange} required />
+                                    </div>
+                                    <div className="form-group md:col-span-2">
+                                        <label htmlFor="noivo1Contato">Contato (Telefone/Email):</label>
+                                        <input type="text" id="noivo1Contato" name="noivo1Contato" value={formData.noivo1Contato} onChange={handleChange} />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Noivo(a) 2 */}
+                            <div className="p-5 bg-gray-50 rounded-xl shadow-sm border border-gray-100">
+                                <h3 className="sub-section-title">
+                                    <i data-lucide="user" className="w-5 h-5 text-[#A0522D]"></i>
+                                    Dados do(a) Noivo(a) 2
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="form-group">
+                                        <label htmlFor="noivo2Nome">Nome completo:</label>
+                                        <input type="text" id="noivo2Nome" name="noivo2Nome" value={formData.noivo2Nome} onChange={handleChange} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="noivo2CPF">CPF:</label>
+                                        <input type="text" id="noivo2CPF" name="noivo2CPF" value={formData.noivo2CPF} onChange={handleChange} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="noivo2DataNascimento">Data de nascimento:</label>
+                                        <input type="date" id="noivo2DataNascimento" name="noivo2DataNascimento" value={formData.noivo2DataNascimento} onChange={handleChange} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="noivo2Nacionalidade">Nacionalidade:</label>
+                                        <input type="text" id="noivo2Nacionalidade" name="noivo2Nacionalidade" value={formData.noivo2Nacionalidade} onChange={handleChange} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="noivo2Naturalidade">Naturalidade:</label>
+                                        <input type="text" id="noivo2Naturalidade" name="noivo2Naturalidade" value={formData.noivo2Naturalidade} onChange={handleChange} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="noivo2EstadoCivil">Estado civil:</label>
+                                        <select id="noivo2EstadoCivil" name="noivo2EstadoCivil" value={formData.noivo2EstadoCivil} onChange={handleChange} required>
+                                            <option value="">Selecione</option>
+                                            <option value="Solteiro(a)">Solteiro(a)</option>
+                                            <option value="Divorciado(a)">Divorciado(a)</option>
+                                            <option value="Viúvo(a)">Viúvo(a)</option>
+                                            <option value="União Estável">União Estável</option>
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="noivo2Profissao">Profissão:</label>
+                                        <input type="text" id="noivo2Profissao" name="noivo2Profissao" value={formData.noivo2Profissao} onChange={handleChange} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="noivo2NomeMae">Nome da mãe:</label>
+                                        <input type="text" id="noivo2NomeMae" name="noivo2NomeMae" value={formData.noivo2NomeMae} onChange={handleChange} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="noivo2NomePai">Nome do pai:</label>
+                                        <input type="text" id="noivo2NomePai" name="noivo2NomePai" value={formData.noivo2NomePai} onChange={handleChange} />
+                                    </div>
+                                    <div className="form-group md:col-span-2">
+                                        <label htmlFor="noivo2Endereco">Endereço completo:</label>
+                                        <input type="text" id="noivo2Endereco" name="noivo2Endereco" value={formData.noivo2Endereco} onChange={handleChange} required />
+                                    </div>
+                                    <div className="form-group md:col-span-2">
+                                        <label htmlFor="noivo2Contato">Contato (Telefone/Email):</label>
+                                        <input type="text" id="noivo2Contato" name="noivo2Contato" value={formData.noivo2Contato} onChange={handleChange} />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Regime de Bens e Alteração de Nome */}
+                            <div className="p-5 bg-gray-50 rounded-xl shadow-sm border border-gray-100">
+                                <h3 className="sub-section-title">
+                                    <i data-lucide="wallet" className="w-5 h-5 text-[#A0522D]"></i>
+                                    Regime de Bens e Alteração de Nome
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="form-group">
+                                        <label htmlFor="regimeBens">Regime de bens escolhido:</label>
+                                        <select id="regimeBens" name="regimeBens" value={formData.regimeBens} onChange={handleChange} required>
+                                            <option value="">Selecione</option>
+                                            <option value="Comunhão parcial">Comunhão parcial</option>
+                                            <option value="Comunhão universal">Comunhão universal</option>
+                                            <option value="Separação total">Separação total</option>
+                                            <option value="Participação final nos aquestos">Participação final nos aquestos</option>
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="alteracaoNome">Haverá alteração de nome?</label>
+                                        <select id="alteracaoNome" name="alteracaoNome" value={formData.alteracaoNome} onChange={handleAlteracaoNomeChange} required>
+                                            <option value="Não">Não</option>
+                                            <option value="Sim">Sim</option>
+                                        </select>
+                                    </div>
+                                    {showNewNameField && (
+                                        <div className="form-group md:col-span-2">
+                                            <label htmlFor="novoNome">Novo nome (se houver alteração):</label>
+                                            <input type="text" id="novoNome" name="novoNome" value={formData.novoNome} onChange={handleChange} />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Data e Horário Pretendidos */}
+                            <div className="p-5 bg-gray-50 rounded-xl shadow-sm border border-gray-100">
+                                <h3 className="sub-section-title">
+                                    <i data-lucide="calendar" className="w-5 h-5 text-[#A0522D]"></i>
+                                    Data e Horário Pretendidos
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="form-group">
+                                        <label htmlFor="dataCasamento">Data pretendida para o casamento:</label>
+                                        <input type="date" id="dataCasamento" name="dataCasamento" value={formData.dataCasamento} onChange={handleChange} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="horarioCasamento">Horário pretendido:</label>
+                                        <input type="time" id="horarioCasamento" name="horarioCasamento" value={formData.horarioCasamento} onChange={handleChange} required />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Testemunhas */}
+                            <div className="p-5 bg-gray-50 rounded-xl shadow-sm border border-gray-100">
+                                <h3 className="sub-section-title">
+                                    <i data-lucide="users-round" className="w-5 h-5 text-[#A0522D]"></i>
+                                    Dados das Testemunhas
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="form-group">
+                                        <label htmlFor="testemunha1Nome">Nome completo Testemunha 1:</label>
+                                        <input type="text" id="testemunha1Nome" name="testemunha1Nome" value={formData.testemunha1Nome} onChange={handleChange} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="testemunha1CPF">CPF Testemunha 1:</label>
+                                        <input type="text" id="testemunha1CPF" name="testemunha1CPF" value={formData.testemunha1CPF} onChange={handleChange} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="testemunha2Nome">Nome completo Testemunha 2:</label>
+                                        <input type="text" id="testemunha2Nome" name="testemunha2Nome" value={formData.testemunha2Nome} onChange={handleChange} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="testemunha2CPF">CPF Testemunha 2:</label>
+                                        <input type="text" id="testemunha2CPF" name="testemunha2CPF" value={formData.testemunha2CPF} onChange={handleChange} required />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="text-center mt-8">
+                                <button type="submit" className="btn-primary">
+                                    <i data-lucide="file-text" className="w-5 h-5"></i>
+                                    Gerar PDF
+                                </button>
+                            </div>
+                        </form>
+                    </section>
+
+                    {messageBox && (
+                        <MessageBox
+                            title={messageBox.title}
+                            message={messageBox.message}
+                            onClose={() => setMessageBox(null)}
+                        />
+                    )}
+                </section>
+            );
+        };
+
+        // Main App Component
+        const App = () => {
+            const [currentPage, setCurrentPage] = React.useState('landing'); // 'landing' or 'tool'
+
+            // Função para alternar para a ferramenta Habilita Fácil
+            const handleAccessTool = () => {
+                setCurrentPage('tool');
+            };
+
+            // Função para voltar para a landing page
+            const handleBackToLanding = () => {
+                setCurrentPage('landing');
+            };
+
+            // Effect to initialize Lucide icons after component mounts and updates
+            React.useEffect(() => {
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                    console.log("Lucide icons initialized in React App.");
+                }
+            }, [currentPage]); // Re-initialize when page changes
+
+            return (
+                <div className="min-h-screen flex flex-col items-center justify-center py-8">
+                    {currentPage === 'landing' ? (
+                        <LandingPage onAccessTool={handleAccessTool} />
+                    ) : (
+                        <HabilitaFacilTool onBackToLanding={handleBackToLanding} />
+                    )}
+                </div>
+            );
+        };
+
+        // Render the App component into the root div
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+
     </script>
 </body>
 </html>
